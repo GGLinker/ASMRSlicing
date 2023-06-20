@@ -5,29 +5,40 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public class TranslateMovement : MonoBehaviour
 {
-    [SerializeField] private Transform owningObject;
-    [SerializeField] private Vector3 targetPosition;
-    [SerializeField] private float movementSpeed;
+    [Serializable]
+    public struct TargetInfo
+    {
+        public Vector3 targetPosition;
+        public float movementSpeed;
+
+        public TargetInfo(Vector3 _targetPosition, float _movementSpeed)
+        {
+            targetPosition = _targetPosition;
+            movementSpeed = _movementSpeed;
+        }
+    }
+    
+    private Transform owningObject;
+    private TargetInfo info;
     private Vector3 movementDirectionStep;
 
     public delegate void OnTargetPointAchieved();
     public event OnTargetPointAchieved OnTargetAchieved;
     
     private Coroutine movementHandler;
-    private bool initialPositionDifferenceSign;
-    
 
-    public void SetupMovement(Transform _owningObject)
+
+    public void SetupMovement(Transform _owningObject, TargetInfo _targetInfo)
     {
-        if (_owningObject == null)
+        if (!_owningObject)
         {
             throw new Exception("Owning object passed in setup is invalid");
         }
 
         owningObject = _owningObject;
+        info = _targetInfo;
         var position = owningObject.position;
-        movementDirectionStep = (targetPosition - position) / movementSpeed / 30;
-        initialPositionDifferenceSign = Vector3.Magnitude(targetPosition - position) > 0;
+        movementDirectionStep = (_targetInfo.targetPosition - position) / _targetInfo.movementSpeed / 30;
     }
 
     public void ManageMovement(bool bMove)
@@ -46,7 +57,7 @@ public class TranslateMovement : MonoBehaviour
     {
         for (;;)
         {
-            if (Vector3.Magnitude(targetPosition - owningObject.position) > 0 != initialPositionDifferenceSign)
+            if (Vector3.Distance(info.targetPosition, owningObject.position) < 0.1f)
             {
                 OnTargetAchieved?.Invoke();
                 yield break;

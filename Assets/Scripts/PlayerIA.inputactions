@@ -7,12 +7,12 @@
             "actions": [
                 {
                     "name": "Interact",
-                    "type": "Value",
+                    "type": "Button",
                     "id": "e7277af0-758a-4b91-8b2e-991da12b9308",
                     "expectedControlType": "Button",
                     "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": true
+                    "interactions": "Press(pressPoint=0.1,behavior=2)",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -20,7 +20,18 @@
                     "name": "",
                     "id": "96346168-e9c4-41db-a62f-c42444084512",
                     "path": "<Touchscreen>/Press",
-                    "interactions": "Hold(duration=0.1,pressPoint=1.401298E-45)",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Interact",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "682bb6b1-2b0f-40cb-8e0b-9dacf30aec80",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
                     "processors": "",
                     "groups": "",
                     "action": "Interact",

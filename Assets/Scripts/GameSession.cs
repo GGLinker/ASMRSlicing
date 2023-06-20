@@ -24,41 +24,74 @@ public class GameSession : MonoBehaviour
     [Tooltip("PreMatchTimerDurationInSeconds")]
     [SerializeField] private int preMatchTimerDurationInSeconds;
 
+    private bool bAllowedInput;
 
     private void Awake()
     {
         inputHandler = GetComponent<InputHandler>();
-        inputHandler.touchStateChanged += (began => { Debug.Log(began); });
+        inputHandler.touchStateChanged += (bBegan) => {OnObjectMoveModeChanged?.Invoke(bBegan);};
     }
     void Start()
     {
         StartCoroutine(GameLoop());
     }
 
+    
+    #region GAME LOOP
     IEnumerator GameLoop()
     {
-        for (;;)
+        yield return StartCoroutine(WaitBeforeMatch());
+        bAllowedInput = true;
+        OnObjectMoveModeChanged += ObjectMoveModeChanged;
+        OnObjectMovedToEnd += () =>
         {
-            yield return StartCoroutine(WaitBeforeMatch());
-            OnObjectMoveModeChanged += ObjectMoveModeChanged;
-            yield return OnObjectMovedToEnd;
-            yield return new WaitForSecondsRealtime(1f);
-        }
+            StartCoroutine(GameLoopSecondPart());
+        };
     }
+    IEnumerator GameLoopSecondPart()
+    {
+        OnObjectMoveModeChanged -= ObjectMoveModeChanged;
+        bAllowedInput = false;
+        Debug.Log("Obj moved to end");
+        yield return new WaitForSecondsRealtime(1f);
+        StartCoroutine(GameLoop());
+    }
+    #endregion
+
 
     IEnumerator WaitBeforeMatch()
     {
         var secondsLeft = preMatchTimerDurationInSeconds;
         while (secondsLeft >= 0)
         {
-            OnTimerTicks?.Invoke(secondsLeft--);
+            OnTimerTicks?.Invoke(secondsLeft);
+            secondsLeft--;
             yield return new WaitForSecondsRealtime(1f);
         }
     }
 
     //Method calls when knife has already been picked up
-    private void ObjectMoveModeChanged(bool bMove)
+    private void ObjectMoveModeChanged(bool bCutBegan)
     {
-        slicingObject.ManageMovement(bMove);
+        if (!bAllowedInput) return;
+        Debug.Log(bCutBegan);
+        if (bCutBegan)
+        {
+            slicingObject.ManageMovement(false);
+            knifeMovement.ManageMovement(true);
+        }
+        else
+        {
+            knifeMovement.ManageMovement(false);
+            bAllowedInput = false;
+            knifeMovement.OnReverseMotionEnded += KnifeReverseMotionEnded;
+            knifeMovement.MoveToInitialPose();
+        }
+    }
+    private void KnifeReverseMotionEnded()
+    {
+        bAllowedInput = true;
+        knifeMovement.SetupMovement();
+        knifeMovement.OnReverseMotionEnded -= KnifeReverseMotionEnded;
     }
 }
