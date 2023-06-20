@@ -1,7 +1,7 @@
 using System;
 using System.Collections;
 using UnityEngine;
-using UnityEngine.Serialization;
+using UnityEngine.Analytics;
 
 [RequireComponent(typeof(TranslateMovement))]
 [RequireComponent(typeof(SliceExecutor))]
@@ -39,6 +39,25 @@ public class KnifeMovement : MonoBehaviour
         {
             bAllowedToSplitObject = false;
             sliceExecutorComponent.Slice();
+            StartCoroutine(UpdateSliceProgressInBendingMaterial());
+        }
+    }
+    IEnumerator UpdateSliceProgressInBendingMaterial()
+    {
+        var absoluteDistance = Vector3.Distance(transform.position, targetInfo.targetPosition);
+        float minReachedDistance = absoluteDistance;
+        while (!bAllowedToSplitObject)
+        {
+            var reachedDistance = Vector3.Distance(transform.position, targetInfo.targetPosition);
+            if (reachedDistance >= minReachedDistance)
+            {
+                yield return null;
+                continue;
+            }
+
+            minReachedDistance = reachedDistance;
+            sliceExecutorComponent.UpdateRollProgressMaterialValueY(Mathf.Lerp(0, 1, minReachedDistance / absoluteDistance));
+            yield return null;
         }
     }
 
