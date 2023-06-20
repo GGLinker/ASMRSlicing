@@ -48,15 +48,14 @@ public class SliceExecutor : MonoBehaviour
         {
             GameObject currentSubObjectToSlice = operatingSubObject.transform.GetChild(i).gameObject;
             
+            var localPosition = currentSubObjectToSlice.transform.localPosition;
+            var localRotation = currentSubObjectToSlice.transform.localRotation;
             SlicedHull hull = currentSubObjectToSlice.Slice(SlicePlane.position, SlicePlane.up);
             if (hull != null)
             {
                 GameObject subObjectSlicedPart = hull.CreateUpperHull(currentSubObjectToSlice);
                 GameObject subObjectRemainPart = hull.CreateLowerHull(currentSubObjectToSlice);
 
-                var localPosition = currentSubObjectToSlice.transform.localPosition;
-                var localRotation = currentSubObjectToSlice.transform.localRotation;
-                
                 subObjectSlicedPart.transform.parent = slicedRoot;
                 subObjectSlicedPart.transform.localPosition = localPosition;
                 subObjectSlicedPart.transform.localRotation = localRotation;
@@ -67,6 +66,12 @@ public class SliceExecutor : MonoBehaviour
 
                 Slice_Recursive(currentSubObjectToSlice, subObjectSlicedPart.transform,
                     subObjectRemainPart.transform);
+            }
+            else
+            {
+                currentSubObjectToSlice.transform.parent = remainRoot;
+                currentSubObjectToSlice.transform.localPosition = localPosition;
+                currentSubObjectToSlice.transform.localRotation = localRotation;
             }
         }
     }
