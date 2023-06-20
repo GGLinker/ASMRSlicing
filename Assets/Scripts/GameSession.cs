@@ -78,20 +78,27 @@ public class GameSession : MonoBehaviour
         if (bCutBegan)
         {
             slicingObject.ManageMovement(false);
+            knifeMovement.OnMotionEnded += KnifeForwardMotionEnded;
+            knifeMovement.SetupMovement(false);
             knifeMovement.ManageMovement(true);
         }
         else
         {
             knifeMovement.ManageMovement(false);
             bAllowedInput = false;
-            knifeMovement.OnReverseMotionEnded += KnifeReverseMotionEnded;
-            knifeMovement.MoveToInitialPose();
+            knifeMovement.OnMotionEnded += KnifeReverseMotionEnded;
+            knifeMovement.SetupMovement(true);
+            knifeMovement.ManageMovement(true);
         }
+    }
+    private void KnifeForwardMotionEnded()
+    {
+        //simulate "release touch" event
+        OnObjectMoveModeChanged?.Invoke(false);
     }
     private void KnifeReverseMotionEnded()
     {
+        knifeMovement.OnMotionEnded -= KnifeReverseMotionEnded;
         bAllowedInput = true;
-        knifeMovement.SetupMovement();
-        knifeMovement.OnReverseMotionEnded -= KnifeReverseMotionEnded;
     }
 }

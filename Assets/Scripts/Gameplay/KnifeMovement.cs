@@ -5,8 +5,8 @@ using UnityEngine;
 [RequireComponent(typeof(TranslateMovement))]
 public class KnifeMovement : MonoBehaviour
 {
-    public delegate void ReverseMotionEnded();
-    public event ReverseMotionEnded OnReverseMotionEnded;
+    public delegate void MotionEnded();
+    public event MotionEnded OnMotionEnded;
 
     [SerializeField] private TranslateMovement.TargetInfo targetInfo;
     [SerializeField] private float reverseMotionSpeed;
@@ -23,27 +23,24 @@ public class KnifeMovement : MonoBehaviour
     private void Start()
     {
         movementComponent = gameObject.GetComponent<TranslateMovement>();
-        SetupMovement();
+        SetupMovement(false);
     }
 
-    public void SetupMovement()
+    public void SetupMovement(bool bReverse)
     {
-        movementComponent.SetupMovement(gameObject.transform, targetInfo);
+        movementComponent.SetupMovement(gameObject.transform, bReverse ? reverseTargetInfo : targetInfo);
     }
     public void ManageMovement(bool bMove)
     {
+        if (bMove)
+        {
+            movementComponent.OnTargetAchieved += TargetAchieved;
+        }
         movementComponent.ManageMovement(bMove);
     }
-
-    public void MoveToInitialPose()
+    private void TargetAchieved()
     {
-        movementComponent.SetupMovement(gameObject.transform, reverseTargetInfo);
-        movementComponent.OnTargetAchieved += ReverseTargetAchieved;
-        ManageMovement(true);
-    }
-    private void ReverseTargetAchieved()
-    {
-       movementComponent.OnTargetAchieved += ReverseTargetAchieved;
-       OnReverseMotionEnded?.Invoke();
+        movementComponent.OnTargetAchieved -= TargetAchieved;
+        OnMotionEnded?.Invoke();
     }
 }

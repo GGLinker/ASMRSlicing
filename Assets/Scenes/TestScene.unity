@@ -542,12 +542,12 @@ PrefabInstance:
     - target: {fileID: 2204876976466374017, guid: e59cfbd75ea948e45966838f29195b22,
         type: 3}
       propertyPath: reverseMotionSpeed
-      value: 10
+      value: 12
       objectReference: {fileID: 0}
     - target: {fileID: 2204876976466374017, guid: e59cfbd75ea948e45966838f29195b22,
         type: 3}
       propertyPath: targetInfo.movementSpeed
-      value: 10
+      value: 9
       objectReference: {fileID: 0}
     - target: {fileID: 2204876976466374017, guid: e59cfbd75ea948e45966838f29195b22,
         type: 3}
