@@ -73,11 +73,6 @@ public class SliceExecutor : MonoBehaviour
         boxCollider.isTrigger = true;
         boxCollider.center = oldCollider.center;
         boxCollider.size = oldCollider.size;
-
-        /*for (int i = 0; i < parent.transform.childCount; i++)
-        {
-            AddPhysicalComponentsOnSlicedSubObjects(parent.transform.GetChild(i).gameObject);
-        }*/
     }
 
     
@@ -109,7 +104,7 @@ public class SliceExecutor : MonoBehaviour
             }
             else
             {
-                currentSubObjectToSlice.transform.parent = remainRoot;
+                currentSubObjectToSlice.transform.parent = currentSubObjectToSlice.transform.position.z >= SlicePlane.transform.position.z ? remainRoot : slicedRoot;
                 currentSubObjectToSlice.transform.localPosition = localPosition;
                 currentSubObjectToSlice.transform.localRotation = localRotation;
             }

@@ -71,11 +71,17 @@ public class KnifeMovement : MonoBehaviour
         {
             movementComponent.OnTargetAchieved += TargetAchieved;
         }
+        else
+        {
+            Debug.Log("Movement stopped");
+            movementComponent.OnTargetAchieved -= TargetAchieved;
+        }
         movementComponent.ManageMovement(bMove);
     }
     private void TargetAchieved()
     {
         movementComponent.OnTargetAchieved -= TargetAchieved;
+        Debug.Log("Movement end triggered");
         OnMotionEnded?.Invoke();
     }
 }

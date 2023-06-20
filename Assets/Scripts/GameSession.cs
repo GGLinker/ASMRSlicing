@@ -15,12 +15,8 @@ public class GameSession : MonoBehaviour
     //UI timer block could subscribe on this event to catch left seconds
     public delegate void OnPreMatchTimerTick(int secondsLeft);
     public static event OnPreMatchTimerTick OnTimerTicks;
-    
-    //This event should be triggered on pause/resume movement of object to cut
-    public delegate void OnObjectToCutMoveModeChanged(bool bMove);
-    public static event OnObjectToCutMoveModeChanged OnInputModeChanged;
-    
-    
+
+
     [Tooltip("PreMatchTimerDurationInSeconds")]
     [SerializeField] private int preMatchTimerDurationInSeconds;
 
@@ -29,7 +25,7 @@ public class GameSession : MonoBehaviour
     private void Awake()
     {
         inputHandler = GetComponent<InputHandler>();
-        inputHandler.touchStateChanged += (bBegan) => {OnInputModeChanged?.Invoke(bBegan);};
+        inputHandler.touchStateChanged += InputModeChanged;
 
         sliceExecutor.OnSliceComplete += (slicedPart, remainPart) =>
         {
@@ -48,7 +44,6 @@ public class GameSession : MonoBehaviour
         yield return StartCoroutine(WaitBeforeMatch());
         slicingObjectMovement.ManageMovement(true);
         bAllowedInput = true;
-        OnInputModeChanged += InputModeChanged;
         slicingObjectMovement.OnMotionEnded += () =>
         {
             StartCoroutine(GameLoopSecondPart());
@@ -56,7 +51,6 @@ public class GameSession : MonoBehaviour
     }
     IEnumerator GameLoopSecondPart()
     {
-        OnInputModeChanged -= InputModeChanged;
         bAllowedInput = false;
         Debug.Log("Obj moved to end");
         yield return new WaitForSecondsRealtime(1f);
@@ -88,6 +82,7 @@ public class GameSession : MonoBehaviour
         }
         else
         {
+            Debug.Log("Reverse movement started");
             knifeMovement.ManageMovement(false);
             bAllowedInput = false;
             knifeMovement.OnMotionEnded -= KnifeForwardMotionEnded;
@@ -98,12 +93,12 @@ public class GameSession : MonoBehaviour
     }
     private void KnifeForwardMotionEnded()
     {
+        Debug.Log("KFME");
+        
         knifeMovement.OnMotionEnded -= KnifeForwardMotionEnded;
         knifeMovement.bAllowedToSplitObject = true;
-        //simulate "release touch" event
-        OnInputModeChanged?.Invoke(false);
         
-        var splitPartRigidbody = sliceExecutor.GetLastSlicedPart().GetComponent<Rigidbody>();
+        var splitPartRigidbody = sliceExecutor.GetLastSlicedPart()?.GetComponent<Rigidbody>();
         if (splitPartRigidbody != null)
         {
             splitPartRigidbody.useGravity = true;
@@ -111,6 +106,9 @@ public class GameSession : MonoBehaviour
             splitPartRigidbody.AddForce(new Vector3(0, 0, -1) * 30);
             splitPartRigidbody.AddTorque(new Vector3(-1, 0, 0) * 30);
         }
+        
+        //simulate "release touch" event
+        InputModeChanged(false);
     }
     private void KnifeReverseMotionEnded()
     {

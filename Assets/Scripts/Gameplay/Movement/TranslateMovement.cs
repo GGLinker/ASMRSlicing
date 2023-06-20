@@ -63,7 +63,7 @@ public class TranslateMovement : MonoBehaviour
     {
         for (;;)
         {
-            if (Vector3.Distance(info.targetPosition, owningObject.position) < 0.1f)
+            if (Vector3.Distance(info.targetPosition, owningObject.position) < 0.02f)
             {
                 OnTargetAchieved?.Invoke();
                 yield break;
