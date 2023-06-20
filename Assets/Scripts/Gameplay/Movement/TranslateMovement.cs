@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 [DisallowMultipleComponent]
 public class TranslateMovement : MonoBehaviour
@@ -9,12 +10,12 @@ public class TranslateMovement : MonoBehaviour
     public struct TargetInfo
     {
         public Vector3 targetPosition;
-        public float movementSpeed;
+        public float movementTime;
 
-        public TargetInfo(Vector3 _targetPosition, float _movementSpeed)
+        public TargetInfo(Vector3 _targetPosition, float _movementTime)
         {
             targetPosition = _targetPosition;
-            movementSpeed = _movementSpeed;
+            movementTime = _movementTime;
         }
     }
     
@@ -43,7 +44,7 @@ public class TranslateMovement : MonoBehaviour
         owningObject = _owningObject;
         info = _targetInfo;
         var position = owningObject.position;
-        movementDirectionStep = (_targetInfo.targetPosition - position) / _targetInfo.movementSpeed / 30;
+        movementDirectionStep = (_targetInfo.targetPosition - position) / _targetInfo.movementTime / 30;
     }
 
     public void ManageMovement(bool bMove)

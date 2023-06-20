@@ -6,6 +6,9 @@ public class SliceExecutor : MonoBehaviour
     [SerializeField] private Transform SlicePlane;
     [SerializeField] private GameObject SlicedObject;
 
+    public delegate void SliceComplete(GameObject slicedPart, GameObject remainPart);
+    public event SliceComplete OnSliceComplete;
+
     public GameObject Slice()
     {
         SlicedHull hull = SlicedObject.Slice(SlicePlane.position, SlicePlane.up);
@@ -20,12 +23,17 @@ public class SliceExecutor : MonoBehaviour
 
             Destroy(SlicedObject);
             SlicedObject = remainPart;
+            
+            OnSliceComplete?.Invoke(slicedPart, remainPart);
+
             return slicedPart;
         }
         return SlicedObject;
     }
     private void CopyComponents(GameObject remainPart)
     {
+        remainPart.tag = "SlicingObject";
+        
         var translateMovement = remainPart.AddComponent<TranslateMovement>();
         translateMovement.SetupMovementComponent(SlicedObject.GetComponent<TranslateMovement>());
         var slicingObjectMovement = remainPart.AddComponent<SlicingObjectMovement>();

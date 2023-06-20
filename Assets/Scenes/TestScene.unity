@@ -519,8 +519,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: abab97593a28a3f4d9953b3e6581ce55, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  slicingObject: {fileID: 695148306}
+  slicingObjectMovement: {fileID: 695148306}
   knifeMovement: {fileID: 1963589622}
+  sliceExecutor: {fileID: 356606470050942245}
   preMatchTimerDurationInSeconds: 2
 --- !u!4 &1281601281
 Transform:
@@ -705,18 +706,28 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2204876976466374017, guid: e59cfbd75ea948e45966838f29195b22,
         type: 3}
+      propertyPath: reverseMotionTime
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 2204876976466374017, guid: e59cfbd75ea948e45966838f29195b22,
+        type: 3}
       propertyPath: slicingObjectsTag
       value: SlicingObject
       objectReference: {fileID: 0}
     - target: {fileID: 2204876976466374017, guid: e59cfbd75ea948e45966838f29195b22,
         type: 3}
       propertyPath: reverseMotionSpeed
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 2204876976466374017, guid: e59cfbd75ea948e45966838f29195b22,
+        type: 3}
+      propertyPath: targetInfo.movementTime
       value: 12
       objectReference: {fileID: 0}
     - target: {fileID: 2204876976466374017, guid: e59cfbd75ea948e45966838f29195b22,
         type: 3}
       propertyPath: targetInfo.movementSpeed
-      value: 9
+      value: 12
       objectReference: {fileID: 0}
     - target: {fileID: 2204876976466374017, guid: e59cfbd75ea948e45966838f29195b22,
         type: 3}
@@ -780,6 +791,18 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &356606470050942245 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5984134642769589011, guid: e59cfbd75ea948e45966838f29195b22,
+    type: 3}
+  m_PrefabInstance: {fileID: 356606470050942238}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 356606470050942239}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4872fa03ee932ad42a5c71d6749fec8b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &517514465665564503
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -854,8 +877,13 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5211082613018828503, guid: 6791f40435451cd4c858e0162659886c,
         type: 3}
+      propertyPath: targetInfo.movementTime
+      value: 110
+      objectReference: {fileID: 0}
+    - target: {fileID: 5211082613018828503, guid: 6791f40435451cd4c858e0162659886c,
+        type: 3}
       propertyPath: targetInfo.movementSpeed
-      value: 10
+      value: 30
       objectReference: {fileID: 0}
     - target: {fileID: 5211082613018828503, guid: 6791f40435451cd4c858e0162659886c,
         type: 3}

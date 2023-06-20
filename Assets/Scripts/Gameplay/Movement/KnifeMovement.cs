@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 [RequireComponent(typeof(TranslateMovement))]
 [RequireComponent(typeof(SliceExecutor))]
@@ -12,7 +13,7 @@ public class KnifeMovement : MonoBehaviour
 
     [SerializeField] private String slicingObjectsTag;
     [SerializeField] private TranslateMovement.TargetInfo targetInfo;
-    [SerializeField] private float reverseMotionSpeed;
+    [SerializeField] private float reverseMotionTime;
     private TranslateMovement.TargetInfo reverseTargetInfo;
 
     private TranslateMovement movementComponent;
@@ -21,7 +22,7 @@ public class KnifeMovement : MonoBehaviour
     private void Awake()
     {
         reverseTargetInfo.targetPosition = gameObject.transform.position;
-        reverseTargetInfo.movementSpeed = reverseMotionSpeed;
+        reverseTargetInfo.movementTime = reverseMotionTime;
         
         movementComponent = GetComponent<TranslateMovement>();
         sliceExecutorComponent = GetComponent<SliceExecutor>();
@@ -36,9 +37,8 @@ public class KnifeMovement : MonoBehaviour
     {
         if (other.gameObject.CompareTag(slicingObjectsTag))
         {
-            Debug.Log("Collide with: " + other.gameObject.name);
             bAllowedToSplitObject = false;
-            Debug.Log(sliceExecutorComponent.Slice().name);
+            sliceExecutorComponent.Slice();
         }
     }
 

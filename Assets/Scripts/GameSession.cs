@@ -1,13 +1,15 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 [DisallowMultipleComponent]
 [RequireComponent(typeof(InputHandler))]
 public class GameSession : MonoBehaviour
 {
-    [SerializeField] private SlicingObjectMovement slicingObject;
+    [SerializeField] private SlicingObjectMovement slicingObjectMovement;
     [SerializeField] private KnifeMovement knifeMovement;
+    [SerializeField] private SliceExecutor sliceExecutor;
     private InputHandler inputHandler;
     
     //UI timer block could subscribe on this event to catch left seconds
@@ -17,9 +19,7 @@ public class GameSession : MonoBehaviour
     //This event should be triggered on pause/resume movement of object to cut
     public delegate void OnObjectToCutMoveModeChanged(bool bMove);
     public static event OnObjectToCutMoveModeChanged OnObjectMoveModeChanged;
-
-    private delegate void OnObjectToCutMovedToEnd();
-    private static event OnObjectToCutMovedToEnd OnObjectMovedToEnd;
+    
     
     [Tooltip("PreMatchTimerDurationInSeconds")]
     [SerializeField] private int preMatchTimerDurationInSeconds;
@@ -30,6 +30,11 @@ public class GameSession : MonoBehaviour
     {
         inputHandler = GetComponent<InputHandler>();
         inputHandler.touchStateChanged += (bBegan) => {OnObjectMoveModeChanged?.Invoke(bBegan);};
+
+        sliceExecutor.OnSliceComplete += (slicedPart, remainPart) =>
+        {
+            slicingObjectMovement = remainPart.GetComponent<SlicingObjectMovement>();
+        };
     }
     void Start()
     {
@@ -41,9 +46,10 @@ public class GameSession : MonoBehaviour
     IEnumerator GameLoop()
     {
         yield return StartCoroutine(WaitBeforeMatch());
+        slicingObjectMovement.ManageMovement(true);
         bAllowedInput = true;
         OnObjectMoveModeChanged += ObjectMoveModeChanged;
-        OnObjectMovedToEnd += () =>
+        slicingObjectMovement.OnMotionEnded += () =>
         {
             StartCoroutine(GameLoopSecondPart());
         };
@@ -70,13 +76,12 @@ public class GameSession : MonoBehaviour
         }
     }
 
-    //Method calls when knife has already been picked up
     private void ObjectMoveModeChanged(bool bCutBegan)
     {
         if (!bAllowedInput) return;
         if (bCutBegan)
         {
-            slicingObject.ManageMovement(false);
+            slicingObjectMovement.ManageMovement(false);
             knifeMovement.OnMotionEnded += KnifeForwardMotionEnded;
             knifeMovement.SetupMovement(false);
             knifeMovement.ManageMovement(true);
@@ -92,6 +97,7 @@ public class GameSession : MonoBehaviour
     }
     private void KnifeForwardMotionEnded()
     {
+        knifeMovement.OnMotionEnded -= KnifeForwardMotionEnded;
         knifeMovement.bAllowedToSplitObject = true;
         //simulate "release touch" event
         OnObjectMoveModeChanged?.Invoke(false);
@@ -99,6 +105,10 @@ public class GameSession : MonoBehaviour
     private void KnifeReverseMotionEnded()
     {
         knifeMovement.OnMotionEnded -= KnifeReverseMotionEnded;
+        if (knifeMovement.bAllowedToSplitObject)
+        {
+            slicingObjectMovement.ManageMovement(true);
+        }
         bAllowedInput = true;
     }
 }

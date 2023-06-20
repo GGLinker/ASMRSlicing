@@ -5,6 +5,9 @@ public class SlicingObjectMovement : MonoBehaviour
 {
     [SerializeField] private TranslateMovement.TargetInfo targetInfo;
     private TranslateMovement movementComponent;
+ 
+    public delegate void MotionEnded();
+    public event MotionEnded OnMotionEnded;
     
     private void Start()
     {
@@ -23,6 +26,15 @@ public class SlicingObjectMovement : MonoBehaviour
     }
     public void ManageMovement(bool bMove)
     {
+        if (bMove)
+        {
+            movementComponent.OnTargetAchieved += TargetAchieved;
+        }
         movementComponent.ManageMovement(bMove);
+    }
+    private void TargetAchieved()
+    {
+        movementComponent.OnTargetAchieved -= TargetAchieved;
+        OnMotionEnded?.Invoke();
     }
 }
