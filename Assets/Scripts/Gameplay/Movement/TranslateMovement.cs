@@ -27,7 +27,12 @@ public class TranslateMovement : MonoBehaviour
     
     private Coroutine movementHandler;
 
-
+    public void SetupMovementComponent(TranslateMovement other)
+    {
+        owningObject = other.owningObject;
+        info = other.info;
+        movementDirectionStep = other.movementDirectionStep;
+    }
     public void SetupMovement(Transform _owningObject, TargetInfo _targetInfo)
     {
         if (!_owningObject)

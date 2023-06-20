@@ -74,7 +74,6 @@ public class GameSession : MonoBehaviour
     private void ObjectMoveModeChanged(bool bCutBegan)
     {
         if (!bAllowedInput) return;
-        Debug.Log(bCutBegan);
         if (bCutBegan)
         {
             slicingObject.ManageMovement(false);
@@ -93,6 +92,7 @@ public class GameSession : MonoBehaviour
     }
     private void KnifeForwardMotionEnded()
     {
+        knifeMovement.bAllowedToSplitObject = true;
         //simulate "release touch" event
         OnObjectMoveModeChanged?.Invoke(false);
     }

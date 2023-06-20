@@ -8,10 +8,19 @@ public class SlicingObjectMovement : MonoBehaviour
     
     private void Start()
     {
+        Setup();
+    }
+    private void Setup()
+    {
         movementComponent = gameObject.GetComponent<TranslateMovement>();
         movementComponent.SetupMovement(gameObject.transform, targetInfo);
     }
-    
+
+    public void SetupComponent(SlicingObjectMovement other)
+    {
+        targetInfo = other.targetInfo;
+        Setup();
+    }
     public void ManageMovement(bool bMove)
     {
         movementComponent.ManageMovement(bMove);
