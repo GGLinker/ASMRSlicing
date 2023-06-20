@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 
@@ -14,14 +15,16 @@ public class TranslateMovement : MonoBehaviour
     
     private Coroutine movementHandler;
     private bool initialPositionDifferenceSign;
+    
 
-    void Start()
+    public void SetupMovement(Transform _owningObject)
     {
-        SetupMovement();
-    }
+        if (_owningObject == null)
+        {
+            throw new Exception("Owning object passed in setup is invalid");
+        }
 
-    public void SetupMovement()
-    {
+        owningObject = _owningObject;
         var position = owningObject.position;
         movementDirectionStep = (targetPosition - position) / movementSpeed / 30;
         initialPositionDifferenceSign = Vector3.Magnitude(targetPosition - position) > 0;

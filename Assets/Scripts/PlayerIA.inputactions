@@ -1,0 +1,34 @@
+{
+    "name": "PlayerIA",
+    "maps": [
+        {
+            "name": "Touch",
+            "id": "f39df457-e413-44cb-ae3f-c7faf3da8c0e",
+            "actions": [
+                {
+                    "name": "Interact",
+                    "type": "Value",
+                    "id": "e7277af0-758a-4b91-8b2e-991da12b9308",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "96346168-e9c4-41db-a62f-c42444084512",
+                    "path": "<Touchscreen>/Press",
+                    "interactions": "Hold(duration=0.1,pressPoint=1.401298E-45)",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Interact",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": []
+}

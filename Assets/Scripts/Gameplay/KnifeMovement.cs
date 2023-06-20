@@ -9,6 +9,7 @@ public class KnifeMovement : MonoBehaviour
     private void Start()
     {
         movementComponent = gameObject.GetComponent<TranslateMovement>();
+        movementComponent.SetupMovement(gameObject.transform);
     }
 
     public void ManageMovement(bool bMove)
