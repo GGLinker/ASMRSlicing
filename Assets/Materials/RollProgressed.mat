@@ -98,7 +98,7 @@ Material:
     - _OcclusionStrength: 1
     - _Parallax: 0.02
     - _PointX: 0.3
-    - _PointY: -0.72873646
+    - _PointY: -0.64397496
     - _QueueOffset: 0
     - _Radius: 1.09
     - _ReceiveShadows: 1
