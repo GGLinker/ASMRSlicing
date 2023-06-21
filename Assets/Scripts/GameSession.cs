@@ -30,6 +30,7 @@ public class GameSession : MonoBehaviour
         sliceExecutor.OnSliceComplete += (slicedPart, remainPart) =>
         {
             slicingObjectMovement = remainPart.GetComponent<SlicingObjectMovement>();
+            SubscribeOnSlicingObjectMotionEnd();
         };
     }
     void Start()
@@ -44,15 +45,14 @@ public class GameSession : MonoBehaviour
         yield return StartCoroutine(WaitBeforeMatch());
         slicingObjectMovement.ManageMovement(true);
         bAllowedInput = true;
-        slicingObjectMovement.OnMotionEnded += () =>
-        {
-            StartCoroutine(GameLoopSecondPart());
-        };
+        SubscribeOnSlicingObjectMotionEnd();
     }
     IEnumerator GameLoopSecondPart()
     {
         bAllowedInput = false;
-        yield return new WaitForSecondsRealtime(1f);
+        sliceExecutor.RespawnSlicedObject();
+        Debug.Log("GAME OVER");
+        yield return null;
         StartCoroutine(GameLoop());
     }
     #endregion
@@ -67,6 +67,14 @@ public class GameSession : MonoBehaviour
             secondsLeft--;
             yield return new WaitForSecondsRealtime(1f);
         }
+    }
+
+    private void SubscribeOnSlicingObjectMotionEnd()
+    {
+        slicingObjectMovement.OnMotionEnded += () =>
+        {
+            StartCoroutine(GameLoopSecondPart());
+        };
     }
 
     private void InputModeChanged(bool bCutBegan)
@@ -88,6 +96,11 @@ public class GameSession : MonoBehaviour
             knifeMovement.ManageMovement(false);
             Debug.Log("Reverse movement started");
             bAllowedInput = false;
+            if (sliceExecutor.bFullySliced)
+            {
+                Debug.LogError("Yep");
+                StartCoroutine(GameLoopSecondPart());
+            }
             knifeMovement.OnTargetAchieved += KnifeReverseMotionEnded;
             knifeMovement.SetupMovement(true);
             knifeMovement.ManageMovement(true);

@@ -19,7 +19,7 @@ public class KnifeMovement : MonoBehaviour
     private TranslateMovement movementComponent;
     private SliceExecutor sliceExecutorComponent;
 
-    private bool bMotionStopped = false;
+    private bool bMotionStopped;
     private float absoluteDistance, minReachedDistance;
 
     private void Awake()

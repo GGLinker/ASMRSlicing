@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using EzySlice;
 
@@ -10,34 +11,66 @@ public class SliceExecutor : MonoBehaviour
     public delegate void SliceComplete(GameObject slicedPart, GameObject remainPart);
     public event SliceComplete OnSliceComplete;
 
+    [HideInInspector] public bool bFullySliced;
+
+    private GameObject hiddenSlicedObjectCopy;
     private GameObject LastSlicedPart;
     public GameObject GetLastSlicedPart()
     {
         return LastSlicedPart;
     }
 
+    private void Start()
+    {
+        CopyAndHideSlicedObjectInstance();
+    }
+
+    private void CopyAndHideSlicedObjectInstance()
+    {
+        hiddenSlicedObjectCopy = Instantiate(SlicedObject);
+        hiddenSlicedObjectCopy.transform.position = SlicedObject.transform.position;
+        hiddenSlicedObjectCopy.transform.rotation = SlicedObject.transform.rotation;
+        
+        hiddenSlicedObjectCopy.SetActive(false);
+    }
+    public void RespawnSlicedObject()
+    {
+        Destroy(SlicedObject);
+        hiddenSlicedObjectCopy.SetActive(true);
+        SlicedObject = hiddenSlicedObjectCopy;
+        OnSliceComplete?.Invoke(LastSlicedPart, SlicedObject);
+        
+        CopyAndHideSlicedObjectInstance();
+    }
+    
     public GameObject Slice()
     {
         SlicedHull hull = SlicedObject.Slice(SlicePlane.position, SlicePlane.up);
+        GameObject slicedPart = SlicedObject, remainPart = SlicedObject;
         if (hull != null)
         {
-            GameObject slicedPart = hull.CreateUpperHull(SlicedObject);
+            slicedPart = hull.CreateUpperHull(SlicedObject);
             slicedPart.GetComponent<MeshRenderer>().material = RolledSliceMaaterial;
-            GameObject remainPart = hull.CreateLowerHull(SlicedObject);
+            remainPart = hull.CreateLowerHull(SlicedObject);
 
             Slice_Recursive(SlicedObject, slicedPart.transform, remainPart.transform);
-            LastSlicedPart = slicedPart;
-
             CopyComponents(remainPart, slicedPart);
 
             Destroy(SlicedObject);
             SlicedObject = remainPart;
-            
-            OnSliceComplete?.Invoke(slicedPart, remainPart);
-
-            return slicedPart;
         }
-        return SlicedObject;
+        else if (SlicedObject.transform.position.z < SlicePlane.transform.position.z)
+        {
+            slicedPart = SlicedObject;
+            bFullySliced = true;
+            Debug.Log("Fully sliced");
+        }
+        else return SlicedObject;
+        
+        LastSlicedPart = slicedPart;
+        OnSliceComplete?.Invoke(slicedPart, remainPart);
+
+        return slicedPart;
     }
     private void CopyComponents(GameObject remainPart, GameObject slicedPart)
     {
