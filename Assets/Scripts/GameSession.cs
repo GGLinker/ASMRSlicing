@@ -10,13 +10,14 @@ public class GameSession : MonoBehaviour
     [SerializeField] private SlicingObjectMovement slicingObjectMovement;
     [SerializeField] private KnifeMovement knifeMovement;
     [SerializeField] private SliceExecutor sliceExecutor;
+    [SerializeField] private TimerWidget timerWidget;
+    [Header("Game Over widget operating zone")]
+    [SerializeField] private Animator gameOverTitleWidgetAnimator;
+    [SerializeField] private AnimationClip appearAnimation;
+    [SerializeField] private AnimationClip fadeAnimation;
+    
     private InputHandler inputHandler;
     
-    //UI timer block could subscribe on this event to catch left seconds
-    public delegate void OnPreMatchTimerTick(int secondsLeft);
-    public static event OnPreMatchTimerTick OnTimerTicks;
-
-
     [Tooltip("PreMatchTimerDurationInSeconds")]
     [SerializeField] private int preMatchTimerDurationInSeconds;
 
@@ -43,6 +44,7 @@ public class GameSession : MonoBehaviour
     IEnumerator GameLoop()
     {
         yield return StartCoroutine(WaitBeforeMatch());
+        knifeMovement.bAllowedToSplitObject = true;
         slicingObjectMovement.ManageMovement(true);
         bAllowedInput = true;
         SubscribeOnSlicingObjectMotionEnd();
@@ -52,22 +54,32 @@ public class GameSession : MonoBehaviour
         bAllowedInput = false;
         sliceExecutor.RespawnSlicedObject();
         Debug.Log("GAME OVER");
-        yield return null;
+        yield return StartCoroutine(GameOverTitleAnimationRoutine());
         StartCoroutine(GameLoop());
     }
-    #endregion
-
-
+    
     IEnumerator WaitBeforeMatch()
     {
         var secondsLeft = preMatchTimerDurationInSeconds;
+        timerWidget.gameObject.SetActive(true);
         while (secondsLeft >= 0)
         {
-            OnTimerTicks?.Invoke(secondsLeft);
-            secondsLeft--;
+            timerWidget.UpdateContent(secondsLeft--);
             yield return new WaitForSecondsRealtime(1f);
         }
+        timerWidget.gameObject.SetActive(false);
     }
+    IEnumerator GameOverTitleAnimationRoutine()
+    {
+        gameOverTitleWidgetAnimator.gameObject.SetActive(true);
+        gameOverTitleWidgetAnimator.Play(appearAnimation.name);
+        yield return new WaitForSecondsRealtime(appearAnimation.length + 1f);
+        gameOverTitleWidgetAnimator.Play(fadeAnimation.name);
+        yield return new WaitForSecondsRealtime(fadeAnimation.length + 1f);
+        gameOverTitleWidgetAnimator.gameObject.SetActive(false);
+    }
+    #endregion
+    
 
     private void SubscribeOnSlicingObjectMotionEnd()
     {
@@ -96,11 +108,6 @@ public class GameSession : MonoBehaviour
             knifeMovement.ManageMovement(false);
             Debug.Log("Reverse movement started");
             bAllowedInput = false;
-            if (sliceExecutor.bFullySliced)
-            {
-                Debug.LogError("Yep");
-                StartCoroutine(GameLoopSecondPart());
-            }
             knifeMovement.OnTargetAchieved += KnifeReverseMotionEnded;
             knifeMovement.SetupMovement(true);
             knifeMovement.ManageMovement(true);
@@ -132,6 +139,11 @@ public class GameSession : MonoBehaviour
         if (knifeMovement.bAllowedToSplitObject)
         {
             slicingObjectMovement.ManageMovement(true);
+        }
+        if (sliceExecutor.bFullySliced)
+        {
+            StartCoroutine(GameLoopSecondPart());
+            return;
         }
         bAllowedInput = true;
     }

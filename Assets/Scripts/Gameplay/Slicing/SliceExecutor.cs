@@ -35,6 +35,7 @@ public class SliceExecutor : MonoBehaviour
     }
     public void RespawnSlicedObject()
     {
+        bFullySliced = false;
         Destroy(SlicedObject);
         hiddenSlicedObjectCopy.SetActive(true);
         SlicedObject = hiddenSlicedObjectCopy;
