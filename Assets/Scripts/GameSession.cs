@@ -52,7 +52,6 @@ public class GameSession : MonoBehaviour
     IEnumerator GameLoopSecondPart()
     {
         bAllowedInput = false;
-        Debug.Log("Obj moved to end");
         yield return new WaitForSecondsRealtime(1f);
         StartCoroutine(GameLoop());
     }
@@ -73,29 +72,32 @@ public class GameSession : MonoBehaviour
     private void InputModeChanged(bool bCutBegan)
     {
         if (!bAllowedInput) return;
+        
+        knifeMovement.OnTargetAchieved -= KnifeForwardMotionEnded;
+        knifeMovement.OnTargetAchieved -= KnifeReverseMotionEnded;
         if (bCutBegan)
         {
+            Debug.Log("Forward movement started");
             slicingObjectMovement.ManageMovement(false);
-            knifeMovement.OnMotionEnded += KnifeForwardMotionEnded;
+            knifeMovement.OnTargetAchieved += KnifeForwardMotionEnded;
             knifeMovement.SetupMovement(false);
             knifeMovement.ManageMovement(true);
         }
         else
         {
-            Debug.Log("Reverse movement started");
             knifeMovement.ManageMovement(false);
+            Debug.Log("Reverse movement started");
             bAllowedInput = false;
-            knifeMovement.OnMotionEnded -= KnifeForwardMotionEnded;
-            knifeMovement.OnMotionEnded += KnifeReverseMotionEnded;
+            knifeMovement.OnTargetAchieved += KnifeReverseMotionEnded;
             knifeMovement.SetupMovement(true);
             knifeMovement.ManageMovement(true);
         }
     }
     private void KnifeForwardMotionEnded()
     {
-        Debug.Log("KFME");
+        Debug.Log("Forward movement ended");
         
-        knifeMovement.OnMotionEnded -= KnifeForwardMotionEnded;
+        knifeMovement.OnTargetAchieved -= KnifeForwardMotionEnded;
         knifeMovement.bAllowedToSplitObject = true;
         
         var splitPartRigidbody = sliceExecutor.GetLastSlicedPart()?.GetComponent<Rigidbody>();
@@ -112,7 +114,8 @@ public class GameSession : MonoBehaviour
     }
     private void KnifeReverseMotionEnded()
     {
-        knifeMovement.OnMotionEnded -= KnifeReverseMotionEnded;
+        Debug.Log("Reverse movement ended");
+        knifeMovement.OnTargetAchieved -= KnifeReverseMotionEnded;
         if (knifeMovement.bAllowedToSplitObject)
         {
             slicingObjectMovement.ManageMovement(true);

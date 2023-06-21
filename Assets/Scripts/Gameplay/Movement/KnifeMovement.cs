@@ -7,8 +7,8 @@ using UnityEngine.Analytics;
 [RequireComponent(typeof(SliceExecutor))]
 public class KnifeMovement : MonoBehaviour
 {
-    public delegate void MotionEnded();
-    public event MotionEnded OnMotionEnded;
+    public delegate void TargetAchievedDelegate();
+    public event TargetAchievedDelegate OnTargetAchieved;
     [HideInInspector] public bool bAllowedToSplitObject = true;
 
     [SerializeField] private String slicingObjectsTag;
@@ -18,6 +18,9 @@ public class KnifeMovement : MonoBehaviour
 
     private TranslateMovement movementComponent;
     private SliceExecutor sliceExecutorComponent;
+
+    private bool bMotionStopped = false;
+    private float absoluteDistance, minReachedDistance;
 
     private void Awake()
     {
@@ -30,23 +33,23 @@ public class KnifeMovement : MonoBehaviour
 
     private void Start()
     {
+        StartCoroutine(UpdateSliceProgressInBendingMaterial());
         SetupMovement(false);
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.gameObject.CompareTag(slicingObjectsTag))
-        {
-            bAllowedToSplitObject = false;
-            sliceExecutorComponent.Slice();
-            StartCoroutine(UpdateSliceProgressInBendingMaterial());
-        }
+        if (!bAllowedToSplitObject || !other.gameObject.CompareTag(slicingObjectsTag)) return;
+        
+        bAllowedToSplitObject = false;
+        sliceExecutorComponent.Slice();
+        minReachedDistance = absoluteDistance;
     }
     IEnumerator UpdateSliceProgressInBendingMaterial()
     {
-        var absoluteDistance = Vector3.Distance(transform.position, targetInfo.targetPosition);
-        float minReachedDistance = absoluteDistance;
-        while (!bAllowedToSplitObject)
+        absoluteDistance = Vector3.Distance(transform.position, targetInfo.targetPosition);
+        minReachedDistance = absoluteDistance;
+        while (true)
         {
             var reachedDistance = Vector3.Distance(transform.position, targetInfo.targetPosition);
             if (reachedDistance >= minReachedDistance)
@@ -67,13 +70,14 @@ public class KnifeMovement : MonoBehaviour
     }
     public void ManageMovement(bool bMove)
     {
+        bMotionStopped = !bMove;
         if (bMove)
         {
             movementComponent.OnTargetAchieved += TargetAchieved;
         }
         else
         {
-            Debug.Log("Movement stopped");
+            Debug.Log("Movement stopped before target has been achieved");
             movementComponent.OnTargetAchieved -= TargetAchieved;
         }
         movementComponent.ManageMovement(bMove);
@@ -81,7 +85,7 @@ public class KnifeMovement : MonoBehaviour
     private void TargetAchieved()
     {
         movementComponent.OnTargetAchieved -= TargetAchieved;
-        Debug.Log("Movement end triggered");
-        OnMotionEnded?.Invoke();
+        Debug.Log("Movement end achieved");
+        if(!bMotionStopped) this.OnTargetAchieved?.Invoke();
     }
 }

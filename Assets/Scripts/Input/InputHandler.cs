@@ -20,21 +20,15 @@ public class InputHandler : MonoBehaviour
     private void OnEnable()
     {
         playerTouchPressAction.performed += PlayerInteracted;
-        playerTouchPressAction.canceled += PlayerInteractionEnded;
     }
-
     private void OnDisable()
     {
         playerTouchPressAction.performed -= PlayerInteracted;
-        playerTouchPressAction.canceled -= PlayerInteractionEnded;
     }
 
     private void PlayerInteracted(InputAction.CallbackContext context)
     {
-        touchStateChanged?.Invoke(true);
-    }
-    private void PlayerInteractionEnded(InputAction.CallbackContext context)
-    {
-        touchStateChanged?.Invoke(false);
+        Debug.Log("++++ " + context.control.IsPressed());
+        touchStateChanged?.Invoke(context.control.IsPressed());
     }
 }
