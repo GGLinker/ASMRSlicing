@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Analytics;
+using UnityEngine.Serialization;
 
 [RequireComponent(typeof(TranslateMovement))]
 [RequireComponent(typeof(SliceExecutor))]
@@ -13,7 +14,7 @@ public class KnifeMovement : MonoBehaviour
 
     [SerializeField] private String slicingObjectsTag;
     [SerializeField] private TranslateMovement.TargetInfo targetInfo;
-    [SerializeField] private float reverseMotionTime;
+    [SerializeField] private float reverseMotionSpeed;
     private TranslateMovement.TargetInfo reverseTargetInfo;
 
     private TranslateMovement movementComponent;
@@ -25,7 +26,7 @@ public class KnifeMovement : MonoBehaviour
     private void Awake()
     {
         reverseTargetInfo.targetPosition = gameObject.transform.position;
-        reverseTargetInfo.movementTime = reverseMotionTime;
+        reverseTargetInfo.movementSpeed = reverseMotionSpeed;
         
         movementComponent = GetComponent<TranslateMovement>();
         sliceExecutorComponent = GetComponent<SliceExecutor>();
@@ -59,7 +60,7 @@ public class KnifeMovement : MonoBehaviour
             }
 
             minReachedDistance = reachedDistance;
-            sliceExecutorComponent.UpdateRollProgressMaterialValueY(Mathf.Lerp(0, 1, minReachedDistance / absoluteDistance));
+            sliceExecutorComponent.UpdateRollProgressMaterialValueY(Mathf.Lerp(-.75f, 1f, minReachedDistance / absoluteDistance));
             yield return null;
         }
     }

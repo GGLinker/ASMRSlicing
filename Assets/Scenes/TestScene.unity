@@ -1285,7 +1285,7 @@ PrefabInstance:
     - target: {fileID: 2204876976466374017, guid: e59cfbd75ea948e45966838f29195b22,
         type: 3}
       propertyPath: reverseMotionTime
-      value: 7
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 2204876976466374017, guid: e59cfbd75ea948e45966838f29195b22,
         type: 3}
@@ -1295,7 +1295,7 @@ PrefabInstance:
     - target: {fileID: 2204876976466374017, guid: e59cfbd75ea948e45966838f29195b22,
         type: 3}
       propertyPath: reverseMotionSpeed
-      value: 7
+      value: 2.6
       objectReference: {fileID: 0}
     - target: {fileID: 2204876976466374017, guid: e59cfbd75ea948e45966838f29195b22,
         type: 3}
@@ -1305,7 +1305,7 @@ PrefabInstance:
     - target: {fileID: 2204876976466374017, guid: e59cfbd75ea948e45966838f29195b22,
         type: 3}
       propertyPath: targetInfo.movementSpeed
-      value: 12
+      value: 1.3
       objectReference: {fileID: 0}
     - target: {fileID: 2204876976466374017, guid: e59cfbd75ea948e45966838f29195b22,
         type: 3}
@@ -1332,6 +1332,11 @@ PrefabInstance:
       propertyPath: SlicedObject
       value: 
       objectReference: {fileID: 517514465665564504}
+    - target: {fileID: 5984134642769589011, guid: e59cfbd75ea948e45966838f29195b22,
+        type: 3}
+      propertyPath: RolledSliceMaterial
+      value: 
+      objectReference: {fileID: 2100000, guid: ed0670789d42d2c488f1f0ddbf058759, type: 2}
     - target: {fileID: 5984134642769589011, guid: e59cfbd75ea948e45966838f29195b22,
         type: 3}
       propertyPath: RolledSliceMaaterial
@@ -1491,7 +1496,7 @@ PrefabInstance:
     - target: {fileID: 5211082613018828503, guid: 6791f40435451cd4c858e0162659886c,
         type: 3}
       propertyPath: targetInfo.movementSpeed
-      value: 30
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 5211082613018828503, guid: 6791f40435451cd4c858e0162659886c,
         type: 3}

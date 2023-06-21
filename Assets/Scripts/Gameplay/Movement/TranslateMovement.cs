@@ -10,18 +10,18 @@ public class TranslateMovement : MonoBehaviour
     public struct TargetInfo
     {
         public Vector3 targetPosition;
-        public float movementTime;
+        public float movementSpeed;
 
-        public TargetInfo(Vector3 _targetPosition, float _movementTime)
+        public TargetInfo(Vector3 _targetPosition, float _movementSpeed)
         {
             targetPosition = _targetPosition;
-            movementTime = _movementTime;
+            movementSpeed = _movementSpeed;
         }
     }
     
     private Transform owningObject;
     private TargetInfo info;
-    private Vector3 movementDirectionStep;
+    private Vector3 movementDirection;
 
     public delegate void OnTargetPointAchieved();
     public event OnTargetPointAchieved OnTargetAchieved;
@@ -32,7 +32,7 @@ public class TranslateMovement : MonoBehaviour
     {
         owningObject = other.owningObject;
         info = other.info;
-        movementDirectionStep = other.movementDirectionStep;
+        movementDirection = other.movementDirection;
     }
     public void SetupMovement(Transform _owningObject, TargetInfo _targetInfo)
     {
@@ -44,7 +44,7 @@ public class TranslateMovement : MonoBehaviour
         owningObject = _owningObject;
         info = _targetInfo;
         var position = owningObject.position;
-        movementDirectionStep = (_targetInfo.targetPosition - position) / _targetInfo.movementTime / 30;
+        movementDirection = (_targetInfo.targetPosition - position).normalized;
     }
 
     public void ManageMovement(bool bMove)
@@ -68,7 +68,7 @@ public class TranslateMovement : MonoBehaviour
                 OnTargetAchieved?.Invoke();
                 yield break;
             }
-            owningObject.Translate(movementDirectionStep, Space.World);
+            owningObject.Translate(movementDirection * (info.movementSpeed * Time.deltaTime), Space.World);
             yield return null;
         }
     }

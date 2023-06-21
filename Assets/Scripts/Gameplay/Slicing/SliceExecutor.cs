@@ -1,12 +1,13 @@
 using System;
 using UnityEngine;
 using EzySlice;
+using UnityEngine.Serialization;
 
 public class SliceExecutor : MonoBehaviour
 {
     [SerializeField] private Transform SlicePlane;
     [SerializeField] private GameObject SlicedObject;
-    [SerializeField] private Material RolledSliceMaaterial;
+    [SerializeField] private Material RolledSliceMaterial;
 
     public delegate void SliceComplete(GameObject slicedPart, GameObject remainPart);
     public event SliceComplete OnSliceComplete;
@@ -51,7 +52,7 @@ public class SliceExecutor : MonoBehaviour
         if (hull != null)
         {
             slicedPart = hull.CreateUpperHull(SlicedObject);
-            slicedPart.GetComponent<MeshRenderer>().material = RolledSliceMaaterial;
+            slicedPart.GetComponent<MeshRenderer>().material = RolledSliceMaterial;
             remainPart = hull.CreateLowerHull(SlicedObject);
 
             Slice_Recursive(SlicedObject, slicedPart.transform, remainPart.transform);
@@ -127,7 +128,7 @@ public class SliceExecutor : MonoBehaviour
                 subObjectSlicedPart.transform.parent = slicedRoot;
                 subObjectSlicedPart.transform.localPosition = localPosition;
                 subObjectSlicedPart.transform.localRotation = localRotation;
-                subObjectSlicedPart.GetComponent<MeshRenderer>().material = RolledSliceMaaterial;
+                subObjectSlicedPart.GetComponent<MeshRenderer>().material = RolledSliceMaterial;
                 
                 subObjectRemainPart.transform.parent = remainRoot;
                 subObjectRemainPart.transform.localPosition = localPosition;
@@ -147,6 +148,6 @@ public class SliceExecutor : MonoBehaviour
 
     public void UpdateRollProgressMaterialValueY(float floatValue)
     {
-        RolledSliceMaaterial.SetFloat("_PointY", floatValue);
+        RolledSliceMaterial.SetFloat("_PointY", floatValue);
     }
 }
