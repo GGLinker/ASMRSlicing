@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 [DisallowMultipleComponent]
 [RequireComponent(typeof(InputHandler))]
@@ -9,7 +8,7 @@ public class GameSession : MonoBehaviour
 {
     #region Singleton
 
-    public GameSession Instanse { get; private set; }
+    public static GameSession Instance { get; private set; }
 
     #endregion
     
@@ -21,7 +20,9 @@ public class GameSession : MonoBehaviour
     [SerializeField] private Animator gameOverTitleWidgetAnimator;
     [SerializeField] private AnimationClip appearAnimation;
     [SerializeField] private AnimationClip fadeAnimation;
-    
+
+    public event EventHandler OnGameOver;
+
     private InputHandler _inputHandler;
     
     [Tooltip("PreMatchTimerDurationInSeconds")]
@@ -31,12 +32,12 @@ public class GameSession : MonoBehaviour
 
     private void Awake()
     {
-        if (Instanse != null)
+        if (Instance != null)
         {
             Debug.LogError("Singleton violation: " + gameObject.name);
             return;
         }
-        Instanse = this;
+        Instance = this;
         
         _inputHandler = GetComponent<InputHandler>();
         _inputHandler.touchStateChanged += HandleInputEvent;
@@ -62,12 +63,16 @@ public class GameSession : MonoBehaviour
         _bAllowedInput = true;
         SubscribeOnSlicingObjectMotionEnd();
     }
-    IEnumerator GameLoopSecondPart()
+    private void GameOver()
     {
         _bAllowedInput = false;
-        sliceExecutor.RespawnSlicedObject();
         Debug.Log("GAME OVER");
-        yield return StartCoroutine(GameOverTitleAnimationRoutine());
+        OnGameOver?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void Restart()
+    {
+        sliceExecutor.RespawnSlicedObject();
         StartCoroutine(GameLoop());
     }
     
@@ -82,24 +87,12 @@ public class GameSession : MonoBehaviour
         }
         timerWidget.gameObject.SetActive(false);
     }
-    IEnumerator GameOverTitleAnimationRoutine()
-    {
-        gameOverTitleWidgetAnimator.gameObject.SetActive(true);
-        gameOverTitleWidgetAnimator.Play(appearAnimation.name);
-        yield return new WaitForSecondsRealtime(appearAnimation.length + 1f);
-        gameOverTitleWidgetAnimator.Play(fadeAnimation.name);
-        yield return new WaitForSecondsRealtime(fadeAnimation.length + 1f);
-        gameOverTitleWidgetAnimator.gameObject.SetActive(false);
-    }
     #endregion
     
 
     private void SubscribeOnSlicingObjectMotionEnd()
     {
-        slicingObjectMovement.OnMotionEnded += (sender, args) =>
-        {
-            StartCoroutine(GameLoopSecondPart());
-        };
+        slicingObjectMovement.OnMotionEnded += (sender, args) => GameOver();
     }
 
     private void HandleInputEvent(object sender, bool bCutBegan)
@@ -155,7 +148,7 @@ public class GameSession : MonoBehaviour
         }
         if (sliceExecutor.bFullySliced)
         {
-            StartCoroutine(GameLoopSecondPart());
+            GameOver();
             return;
         }
         _bAllowedInput = true;
