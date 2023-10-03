@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 [DisallowMultipleComponent]
 public class TranslateMovement : MonoBehaviour
@@ -12,50 +11,49 @@ public class TranslateMovement : MonoBehaviour
         public Vector3 targetPosition;
         public float movementSpeed;
 
-        public TargetInfo(Vector3 _targetPosition, float _movementSpeed)
+        public TargetInfo(Vector3 targetPosition, float movementSpeed)
         {
-            targetPosition = _targetPosition;
-            movementSpeed = _movementSpeed;
+            this.targetPosition = targetPosition;
+            this.movementSpeed = movementSpeed;
         }
     }
     
-    private Transform owningObject;
-    private TargetInfo info;
-    private Vector3 movementDirection;
-
-    public delegate void OnTargetPointAchieved();
-    public event OnTargetPointAchieved OnTargetAchieved;
+    public event EventHandler OnTargetAchieved;
     
-    private Coroutine movementHandler;
+    private Transform _owningObject;
+    private TargetInfo _info;
+    private Vector3 _movementDirection;
+
+    private Coroutine _movementHandler;
 
     public void SetupMovementComponent(TranslateMovement other)
     {
-        owningObject = other.owningObject;
-        info = other.info;
-        movementDirection = other.movementDirection;
+        _owningObject = other._owningObject;
+        _info = other._info;
+        _movementDirection = other._movementDirection;
     }
-    public void SetupMovement(Transform _owningObject, TargetInfo _targetInfo)
+    public void SetupMovement(Transform owningObject, TargetInfo targetInfo)
     {
-        if (!_owningObject)
+        if (!owningObject)
         {
             throw new Exception("Owning object passed in setup is invalid");
         }
 
-        owningObject = _owningObject;
-        info = _targetInfo;
-        var position = owningObject.position;
-        movementDirection = (_targetInfo.targetPosition - position).normalized;
+        this._owningObject = owningObject;
+        _info = targetInfo;
+        var position = this._owningObject.position;
+        _movementDirection = (targetInfo.targetPosition - position).normalized;
     }
 
     public void ManageMovement(bool bMove)
     {
         if (bMove)
         {
-            movementHandler = StartCoroutine(MovementCoroutine());
+            _movementHandler = StartCoroutine(MovementCoroutine());
         }
-        else if (movementHandler != null)
+        else if (_movementHandler != null)
         {
-            StopCoroutine(movementHandler);
+            StopCoroutine(_movementHandler);
         }
     }
 
@@ -63,12 +61,12 @@ public class TranslateMovement : MonoBehaviour
     {
         for (;;)
         {
-            if (Vector3.Distance(info.targetPosition, owningObject.position) < 0.1f)
+            if (Vector3.Distance(_info.targetPosition, _owningObject.position) < 0.1f)
             {
-                OnTargetAchieved?.Invoke();
+                OnTargetAchieved?.Invoke(this, EventArgs.Empty);
                 yield break;
             }
-            owningObject.Translate(movementDirection * (info.movementSpeed * Time.deltaTime), Space.World);
+            _owningObject.Translate(_movementDirection * (_info.movementSpeed * Time.deltaTime), Space.World);
             yield return null;
         }
     }

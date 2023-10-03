@@ -1,13 +1,13 @@
+using System;
 using UnityEngine;
 
 [RequireComponent(typeof(TranslateMovement))]
 public class SlicingObjectMovement : MonoBehaviour
 {
     [SerializeField] private TranslateMovement.TargetInfo targetInfo;
-    private TranslateMovement movementComponent;
- 
-    public delegate void MotionEnded();
-    public event MotionEnded OnMotionEnded;
+    private TranslateMovement _movementComponent;
+
+    public event EventHandler OnMotionEnded;
     
     private void Start()
     {
@@ -15,8 +15,8 @@ public class SlicingObjectMovement : MonoBehaviour
     }
     private void Setup()
     {
-        movementComponent = gameObject.GetComponent<TranslateMovement>();
-        movementComponent.SetupMovement(transform, targetInfo);
+        _movementComponent = gameObject.GetComponent<TranslateMovement>();
+        _movementComponent.SetupMovement(transform, targetInfo);
     }
 
     public void SetupComponent(SlicingObjectMovement other)
@@ -28,13 +28,13 @@ public class SlicingObjectMovement : MonoBehaviour
     {
         if (bMove)
         {
-            movementComponent.OnTargetAchieved += TargetAchieved;
+            _movementComponent.OnTargetAchieved += TargetAchieved;
         }
-        movementComponent.ManageMovement(bMove);
+        _movementComponent.ManageMovement(bMove);
     }
-    private void TargetAchieved()
+    private void TargetAchieved(object sender, EventArgs args)
     {
-        movementComponent.OnTargetAchieved -= TargetAchieved;
-        OnMotionEnded?.Invoke();
+        _movementComponent.OnTargetAchieved -= TargetAchieved;
+        OnMotionEnded?.Invoke(this, EventArgs.Empty);
     }
 }

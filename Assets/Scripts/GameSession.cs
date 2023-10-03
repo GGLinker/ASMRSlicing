@@ -7,6 +7,12 @@ using UnityEngine.Serialization;
 [RequireComponent(typeof(InputHandler))]
 public class GameSession : MonoBehaviour
 {
+    #region Singleton
+
+    public GameSession Instanse { get; private set; }
+
+    #endregion
+    
     [SerializeField] private SlicingObjectMovement slicingObjectMovement;
     [SerializeField] private KnifeMovement knifeMovement;
     [SerializeField] private SliceExecutor sliceExecutor;
@@ -16,17 +22,24 @@ public class GameSession : MonoBehaviour
     [SerializeField] private AnimationClip appearAnimation;
     [SerializeField] private AnimationClip fadeAnimation;
     
-    private InputHandler inputHandler;
+    private InputHandler _inputHandler;
     
     [Tooltip("PreMatchTimerDurationInSeconds")]
     [SerializeField] private int preMatchTimerDurationInSeconds;
 
-    private bool bAllowedInput;
+    private bool _bAllowedInput;
 
     private void Awake()
     {
-        inputHandler = GetComponent<InputHandler>();
-        inputHandler.touchStateChanged += InputModeChanged;
+        if (Instanse != null)
+        {
+            Debug.LogError("Singleton violation: " + gameObject.name);
+            return;
+        }
+        Instanse = this;
+        
+        _inputHandler = GetComponent<InputHandler>();
+        _inputHandler.touchStateChanged += HandleInputEvent;
 
         sliceExecutor.OnSliceComplete += (slicedPart, remainPart) =>
         {
@@ -46,12 +59,12 @@ public class GameSession : MonoBehaviour
         yield return StartCoroutine(WaitBeforeMatch());
         knifeMovement.bAllowedToSplitObject = true;
         slicingObjectMovement.ManageMovement(true);
-        bAllowedInput = true;
+        _bAllowedInput = true;
         SubscribeOnSlicingObjectMotionEnd();
     }
     IEnumerator GameLoopSecondPart()
     {
-        bAllowedInput = false;
+        _bAllowedInput = false;
         sliceExecutor.RespawnSlicedObject();
         Debug.Log("GAME OVER");
         yield return StartCoroutine(GameOverTitleAnimationRoutine());
@@ -83,15 +96,15 @@ public class GameSession : MonoBehaviour
 
     private void SubscribeOnSlicingObjectMotionEnd()
     {
-        slicingObjectMovement.OnMotionEnded += () =>
+        slicingObjectMovement.OnMotionEnded += (sender, args) =>
         {
             StartCoroutine(GameLoopSecondPart());
         };
     }
 
-    private void InputModeChanged(bool bCutBegan)
+    private void HandleInputEvent(object sender, bool bCutBegan)
     {
-        if (!bAllowedInput) return;
+        if (!_bAllowedInput) return;
         
         knifeMovement.OnTargetAchieved -= KnifeForwardMotionEnded;
         knifeMovement.OnTargetAchieved -= KnifeReverseMotionEnded;
@@ -107,7 +120,7 @@ public class GameSession : MonoBehaviour
         {
             knifeMovement.ManageMovement(false);
             Debug.Log("Reverse movement started");
-            bAllowedInput = false;
+            _bAllowedInput = false;
             knifeMovement.OnTargetAchieved += KnifeReverseMotionEnded;
             knifeMovement.SetupMovement(true);
             knifeMovement.ManageMovement(true);
@@ -130,7 +143,7 @@ public class GameSession : MonoBehaviour
         }
         
         //simulate "release touch" event
-        InputModeChanged(false);
+        HandleInputEvent(this, false);
     }
     private void KnifeReverseMotionEnded()
     {
@@ -145,6 +158,6 @@ public class GameSession : MonoBehaviour
             StartCoroutine(GameLoopSecondPart());
             return;
         }
-        bAllowedInput = true;
+        _bAllowedInput = true;
     }
 }

@@ -5,30 +5,28 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(PlayerInput))]
 public class InputHandler : MonoBehaviour
 {
-    public delegate void TouchInputFired(bool bBegan);
-    public event TouchInputFired touchStateChanged;
+    public event EventHandler<bool> touchStateChanged;
 
-    private PlayerInput playerInput;
-    private InputAction playerTouchPressAction;
+    private PlayerInput _playerInput;
+    private InputAction _playerTouchPressAction;
 
     private void Awake()
     {
-        playerInput = GetComponent<PlayerInput>();
-        playerTouchPressAction = playerInput.actions.FindAction("Interact");
+        _playerInput = GetComponent<PlayerInput>();
+        _playerTouchPressAction = _playerInput.actions.FindAction("Interact");
     }
 
     private void OnEnable()
     {
-        playerTouchPressAction.performed += PlayerInteracted;
+        _playerTouchPressAction.performed += PlayerInteracted;
     }
     private void OnDisable()
     {
-        playerTouchPressAction.performed -= PlayerInteracted;
+        _playerTouchPressAction.performed -= PlayerInteracted;
     }
 
     private void PlayerInteracted(InputAction.CallbackContext context)
     {
-        Debug.Log("++++ " + context.control.IsPressed());
-        touchStateChanged?.Invoke(context.control.IsPressed());
+        touchStateChanged?.Invoke( this, context.control.IsPressed());
     }
 }

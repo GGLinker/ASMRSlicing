@@ -1,6 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
@@ -8,15 +5,15 @@ using UnityEngine;
 [RequireComponent(typeof(TextMeshProUGUI))]
 public class TimerWidget : MonoBehaviour
 {
-    private TextMeshProUGUI textWidget;
+    private TextMeshProUGUI _textWidget;
 
     private void Awake()
     {
-        textWidget = gameObject.GetComponent<TextMeshProUGUI>();
+        _textWidget = gameObject.GetComponent<TextMeshProUGUI>();
     }
 
     public void UpdateContent(int timerValue)
     {
-        textWidget.text = timerValue.ToString();
+        _textWidget.text = timerValue.ToString();
     }
 }

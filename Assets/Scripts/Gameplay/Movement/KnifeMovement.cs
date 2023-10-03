@@ -79,7 +79,7 @@ public class KnifeMovement : MonoBehaviour
         }
         _movementComponent.ManageMovement(bMove);
     }
-    private void TargetAchieved()
+    private void TargetAchieved(object sender, EventArgs args)
     {
         _movementComponent.OnTargetAchieved -= TargetAchieved;
         Debug.Log("Movement end achieved");
