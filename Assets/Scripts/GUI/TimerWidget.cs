@@ -1,19 +1,32 @@
+using System.Collections;
 using TMPro;
 using UnityEngine;
 
-[RequireComponent(typeof(CanvasRenderer))]
-[RequireComponent(typeof(TextMeshProUGUI))]
 public class TimerWidget : MonoBehaviour
 {
-    private TextMeshProUGUI _textWidget;
+    [SerializeField] private TextMeshProUGUI textWidget;
 
-    private void Awake()
+    private void Start()
     {
-        _textWidget = gameObject.GetComponent<TextMeshProUGUI>();
+        GameSession.Instance.OnPreMatchCountdownRequest += (sender, amount) =>
+        {
+            Debug.Log("!!!!");
+            StartCoroutine(Countdown(amount));
+        };
+        textWidget.gameObject.SetActive(false);
     }
 
-    public void UpdateContent(int timerValue)
+    private IEnumerator Countdown(int amount)
     {
-        _textWidget.text = timerValue.ToString();
+        var secondsLeft = amount;
+        textWidget.gameObject.SetActive(true);
+        while (secondsLeft >= 0)
+        {
+            textWidget.text = (secondsLeft--).ToString();
+            yield return new WaitForSecondsRealtime(1f);
+        }
+        textWidget.gameObject.SetActive(false);
+
+        GameSession.Instance.GameFlow();
     }
 }

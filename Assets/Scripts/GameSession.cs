@@ -15,18 +15,14 @@ public class GameSession : MonoBehaviour
     [SerializeField] private SlicingObjectMovement slicingObjectMovement;
     [SerializeField] private KnifeMovement knifeMovement;
     [SerializeField] private SliceExecutor sliceExecutor;
-    [SerializeField] private TimerWidget timerWidget;
-    [Header("Game Over widget operating zone")]
-    [SerializeField] private Animator gameOverTitleWidgetAnimator;
-    [SerializeField] private AnimationClip appearAnimation;
-    [SerializeField] private AnimationClip fadeAnimation;
-
+    
+    [SerializeField] private int preMatchTimerDurationInSeconds;
+    public event EventHandler<int> OnPreMatchCountdownRequest;
     public event EventHandler OnGameOver;
 
     private InputHandler _inputHandler;
     
     [Tooltip("PreMatchTimerDurationInSeconds")]
-    [SerializeField] private int preMatchTimerDurationInSeconds;
 
     private bool _bAllowedInput;
 
@@ -48,16 +44,16 @@ public class GameSession : MonoBehaviour
             SubscribeOnSlicingObjectMotionEnd();
         };
     }
-    void Start()
+    private IEnumerator Start()
     {
-        StartCoroutine(GameLoop());
+        while(OnPreMatchCountdownRequest == null) yield return null;
+        OnPreMatchCountdownRequest?.Invoke(this, preMatchTimerDurationInSeconds);
     }
 
     
     #region GAME LOOP
-    IEnumerator GameLoop()
+    public void GameFlow()
     {
-        yield return StartCoroutine(WaitBeforeMatch());
         knifeMovement.bAllowedToSplitObject = true;
         slicingObjectMovement.ManageMovement(true);
         _bAllowedInput = true;
@@ -73,19 +69,7 @@ public class GameSession : MonoBehaviour
     public void Restart()
     {
         sliceExecutor.RespawnSlicedObject();
-        StartCoroutine(GameLoop());
-    }
-    
-    IEnumerator WaitBeforeMatch()
-    {
-        var secondsLeft = preMatchTimerDurationInSeconds;
-        timerWidget.gameObject.SetActive(true);
-        while (secondsLeft >= 0)
-        {
-            timerWidget.UpdateContent(secondsLeft--);
-            yield return new WaitForSecondsRealtime(1f);
-        }
-        timerWidget.gameObject.SetActive(false);
+        OnPreMatchCountdownRequest?.Invoke(this, preMatchTimerDurationInSeconds);
     }
     #endregion
     
