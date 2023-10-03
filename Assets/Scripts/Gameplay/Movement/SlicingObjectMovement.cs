@@ -24,13 +24,13 @@ public class SlicingObjectMovement : MonoBehaviour
         targetInfo = other.targetInfo;
         Setup();
     }
-    public void ManageMovement(bool bMove)
+    public void Move(bool bMove)
     {
         if (bMove)
         {
             _movementComponent.OnTargetAchieved += TargetAchieved;
         }
-        _movementComponent.ManageMovement(bMove);
+        _movementComponent.Move(bMove);
     }
     private void TargetAchieved(object sender, EventArgs args)
     {

@@ -45,7 +45,7 @@ public class TranslateMovement : MonoBehaviour
         _movementDirection = (targetInfo.targetPosition - position).normalized;
     }
 
-    public void ManageMovement(bool bMove)
+    public void Move(bool bMove)
     {
         if (bMove)
         {

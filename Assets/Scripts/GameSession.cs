@@ -15,14 +15,11 @@ public class GameSession : MonoBehaviour
     [SerializeField] private SlicingObjectMovement slicingObjectMovement;
     [SerializeField] private KnifeMovement knifeMovement;
     [SerializeField] private SliceExecutor sliceExecutor;
-    
     [SerializeField] private int preMatchTimerDurationInSeconds;
     public event EventHandler<int> OnPreMatchCountdownRequest;
     public event EventHandler OnGameOver;
 
     private InputHandler _inputHandler;
-    
-    [Tooltip("PreMatchTimerDurationInSeconds")]
 
     private bool _bAllowedInput;
 
@@ -38,10 +35,11 @@ public class GameSession : MonoBehaviour
         _inputHandler = GetComponent<InputHandler>();
         _inputHandler.touchStateChanged += HandleInputEvent;
 
+        //Update slicing object ref & binding to passing knife's position
         sliceExecutor.OnSliceComplete += (slicedPart, remainPart) =>
         {
             slicingObjectMovement = remainPart.GetComponent<SlicingObjectMovement>();
-            SubscribeOnSlicingObjectMotionEnd();
+            slicingObjectMovement.OnMotionEnded += (sender, args) => GameOver();
         };
     }
     private IEnumerator Start()
@@ -55,9 +53,9 @@ public class GameSession : MonoBehaviour
     public void GameFlow()
     {
         knifeMovement.bAllowedToSplitObject = true;
-        slicingObjectMovement.ManageMovement(true);
+        slicingObjectMovement.Move(true);
         _bAllowedInput = true;
-        SubscribeOnSlicingObjectMotionEnd();
+        slicingObjectMovement.OnMotionEnded += (sender, args) => GameOver();
     }
     private void GameOver()
     {
@@ -74,11 +72,6 @@ public class GameSession : MonoBehaviour
     #endregion
     
 
-    private void SubscribeOnSlicingObjectMotionEnd()
-    {
-        slicingObjectMovement.OnMotionEnded += (sender, args) => GameOver();
-    }
-
     private void HandleInputEvent(object sender, bool bCutBegan)
     {
         if (!_bAllowedInput) return;
@@ -88,7 +81,7 @@ public class GameSession : MonoBehaviour
         if (bCutBegan)
         {
             Debug.Log("Forward movement started");
-            slicingObjectMovement.ManageMovement(false);
+            slicingObjectMovement.Move(false);
             knifeMovement.OnTargetAchieved += KnifeForwardMotionEnded;
             knifeMovement.SetupMovement(false);
             knifeMovement.ManageMovement(true);
@@ -103,7 +96,7 @@ public class GameSession : MonoBehaviour
             knifeMovement.ManageMovement(true);
         }
     }
-    private void KnifeForwardMotionEnded()
+    private void KnifeForwardMotionEnded(object sender, EventArgs args)
     {
         Debug.Log("Forward movement ended");
         
@@ -122,13 +115,13 @@ public class GameSession : MonoBehaviour
         //simulate "release touch" event
         HandleInputEvent(this, false);
     }
-    private void KnifeReverseMotionEnded()
+    private void KnifeReverseMotionEnded(object sender, EventArgs args)
     {
         Debug.Log("Reverse movement ended");
         knifeMovement.OnTargetAchieved -= KnifeReverseMotionEnded;
         if (knifeMovement.bAllowedToSplitObject)
         {
-            slicingObjectMovement.ManageMovement(true);
+            slicingObjectMovement.Move(true);
         }
         if (sliceExecutor.bFullySliced)
         {

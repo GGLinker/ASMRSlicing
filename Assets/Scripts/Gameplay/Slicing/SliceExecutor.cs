@@ -5,7 +5,7 @@ public class SliceExecutor : MonoBehaviour
 {
     [SerializeField] private Transform slicePlane;
     [SerializeField] private GameObject slicedObject;
-    [SerializeField] private Material rolledSliceMaterial;
+    [SerializeField] private Material bendMeshMaterial;
     [SerializeField] private Material slicedFaceMaterial;
     [SerializeField] private Material remainPartSliceMaterial;
 
@@ -54,7 +54,7 @@ public class SliceExecutor : MonoBehaviour
             slicedPart = hull.CreateUpperHull(slicedObject);
             ApplyMaterials(
                 slicedPart.GetComponent<MeshRenderer>(), 
-                rolledSliceMaterial,
+                bendMeshMaterial,
                 slicedFaceMaterial);
             remainPart = hull.CreateLowerHull(slicedObject);
             ApplyMaterials(
@@ -84,13 +84,13 @@ public class SliceExecutor : MonoBehaviour
     
     public void UpdateBendMaterialValue(float floatValue)
     {
-        rolledSliceMaterial.SetFloat("_BendProgress", floatValue);
+        bendMeshMaterial.SetFloat("_BendProgress", floatValue);
         slicedFaceMaterial.SetFloat("_BendProgress", floatValue);
     }
     private void CopyComponents(GameObject remainPart, GameObject slicedPart)
     {
         //Remain
-        remainPart.tag = "SlicingObject";
+        remainPart.tag = KnifeMovement.SLICING_OBJECTS_TAG;
         
         var translateMovement = remainPart.AddComponent<TranslateMovement>();
         translateMovement.SetupMovementComponent(slicedObject.GetComponent<TranslateMovement>());
@@ -143,7 +143,7 @@ public class SliceExecutor : MonoBehaviour
                 subObjectSlicedPart.transform.parent = slicedRoot;
                 subObjectSlicedPart.transform.localPosition = localPosition;
                 subObjectSlicedPart.transform.localRotation = localRotation;
-                ApplyMaterials(subObjectSlicedPart.GetComponent<MeshRenderer>(), rolledSliceMaterial, slicedFaceMaterial);
+                ApplyMaterials(subObjectSlicedPart.GetComponent<MeshRenderer>(), bendMeshMaterial, slicedFaceMaterial);
                 
                 subObjectRemainPart.transform.parent = remainRoot;
                 subObjectRemainPart.transform.localPosition = localPosition;
