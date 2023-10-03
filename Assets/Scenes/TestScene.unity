@@ -1411,11 +1411,6 @@ PrefabInstance:
       objectReference: {fileID: 517514465665564504}
     - target: {fileID: 5984134642769589011, guid: e59cfbd75ea948e45966838f29195b22,
         type: 3}
-      propertyPath: RolledSliceMaterial
-      value: 
-      objectReference: {fileID: 2100000, guid: ed0670789d42d2c488f1f0ddbf058759, type: 2}
-    - target: {fileID: 5984134642769589011, guid: e59cfbd75ea948e45966838f29195b22,
-        type: 3}
       propertyPath: RolledSliceMaaterial
       value: 
       objectReference: {fileID: 2100000, guid: ed0670789d42d2c488f1f0ddbf058759, type: 2}
@@ -1480,11 +1475,6 @@ PrefabInstance:
       propertyPath: m_Materials.Array.size
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: 1499018730167948243, guid: 6791f40435451cd4c858e0162659886c,
-        type: 3}
-      propertyPath: m_Materials.Array.data[0]
-      value: 
-      objectReference: {fileID: 2100000, guid: eca64003df64263499a44c4cf46c793f, type: 2}
     - target: {fileID: 1499018730167948243, guid: 6791f40435451cd4c858e0162659886c,
         type: 3}
       propertyPath: m_Materials.Array.data[1]

@@ -1,24 +1,28 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using EzySlice;
 using UnityEngine.Serialization;
+using UnityEngine.UI;
 
 public class SliceExecutor : MonoBehaviour
 {
     [SerializeField] private Transform SlicePlane;
     [SerializeField] private GameObject SlicedObject;
     [SerializeField] private Material RolledSliceMaterial;
+    [SerializeField] private Material SlicedFaceMaterial;
+    [SerializeField] private Material RemainPartSliceMaterial;
 
     public delegate void SliceComplete(GameObject slicedPart, GameObject remainPart);
     public event SliceComplete OnSliceComplete;
 
     [HideInInspector] public bool bFullySliced;
 
-    private GameObject hiddenSlicedObjectCopy;
-    private GameObject LastSlicedPart;
+    private GameObject _hiddenSlicedObjectCopy;
+    private GameObject _lastSlicedPart;
     public GameObject GetLastSlicedPart()
     {
-        return LastSlicedPart;
+        return _lastSlicedPart;
     }
 
     private void Start()
@@ -28,19 +32,19 @@ public class SliceExecutor : MonoBehaviour
 
     private void CopyAndHideSlicedObjectInstance()
     {
-        hiddenSlicedObjectCopy = Instantiate(SlicedObject);
-        hiddenSlicedObjectCopy.transform.position = SlicedObject.transform.position;
-        hiddenSlicedObjectCopy.transform.rotation = SlicedObject.transform.rotation;
+        _hiddenSlicedObjectCopy = Instantiate(SlicedObject);
+        _hiddenSlicedObjectCopy.transform.position = SlicedObject.transform.position;
+        _hiddenSlicedObjectCopy.transform.rotation = SlicedObject.transform.rotation;
         
-        hiddenSlicedObjectCopy.SetActive(false);
+        _hiddenSlicedObjectCopy.SetActive(false);
     }
     public void RespawnSlicedObject()
     {
         bFullySliced = false;
         Destroy(SlicedObject);
-        hiddenSlicedObjectCopy.SetActive(true);
-        SlicedObject = hiddenSlicedObjectCopy;
-        OnSliceComplete?.Invoke(LastSlicedPart, SlicedObject);
+        _hiddenSlicedObjectCopy.SetActive(true);
+        SlicedObject = _hiddenSlicedObjectCopy;
+        OnSliceComplete?.Invoke(_lastSlicedPart, SlicedObject);
         
         CopyAndHideSlicedObjectInstance();
     }
@@ -52,8 +56,15 @@ public class SliceExecutor : MonoBehaviour
         if (hull != null)
         {
             slicedPart = hull.CreateUpperHull(SlicedObject);
-            slicedPart.GetComponent<MeshRenderer>().material = RolledSliceMaterial;
+            ApplyMaterials(
+                slicedPart.GetComponent<MeshRenderer>(), 
+                RolledSliceMaterial,
+                SlicedFaceMaterial);
             remainPart = hull.CreateLowerHull(SlicedObject);
+            ApplyMaterials(
+                remainPart.GetComponent<MeshRenderer>(), 
+                SlicedObject.GetComponent<MeshRenderer>().material,
+                RemainPartSliceMaterial);
 
             Slice_Recursive(SlicedObject, slicedPart.transform, remainPart.transform);
             CopyComponents(remainPart, slicedPart);
@@ -69,10 +80,16 @@ public class SliceExecutor : MonoBehaviour
         }
         else return SlicedObject;
         
-        LastSlicedPart = slicedPart;
+        _lastSlicedPart = slicedPart;
         OnSliceComplete?.Invoke(slicedPart, remainPart);
 
         return slicedPart;
+    }
+    
+    public void UpdateBendMaterialValue(float floatValue)
+    {
+        RolledSliceMaterial.SetFloat("_BendProgress", floatValue);
+        SlicedFaceMaterial.SetFloat("_BendProgress", floatValue);
     }
     private void CopyComponents(GameObject remainPart, GameObject slicedPart)
     {
@@ -117,6 +134,8 @@ public class SliceExecutor : MonoBehaviour
         {
             GameObject currentSubObjectToSlice = operatingSubObject.transform.GetChild(i).gameObject;
             
+            Material initialMaterial = currentSubObjectToSlice.GetComponent<MeshRenderer>().materials[0];
+
             var localPosition = currentSubObjectToSlice.transform.localPosition;
             var localRotation = currentSubObjectToSlice.transform.localRotation;
             SlicedHull hull = currentSubObjectToSlice.Slice(SlicePlane.position, SlicePlane.up);
@@ -124,15 +143,16 @@ public class SliceExecutor : MonoBehaviour
             {
                 GameObject subObjectSlicedPart = hull.CreateUpperHull(currentSubObjectToSlice);
                 GameObject subObjectRemainPart = hull.CreateLowerHull(currentSubObjectToSlice);
-
+                
                 subObjectSlicedPart.transform.parent = slicedRoot;
                 subObjectSlicedPart.transform.localPosition = localPosition;
                 subObjectSlicedPart.transform.localRotation = localRotation;
-                subObjectSlicedPart.GetComponent<MeshRenderer>().material = RolledSliceMaterial;
+                ApplyMaterials(subObjectSlicedPart.GetComponent<MeshRenderer>(), RolledSliceMaterial, SlicedFaceMaterial);
                 
                 subObjectRemainPart.transform.parent = remainRoot;
                 subObjectRemainPart.transform.localPosition = localPosition;
                 subObjectRemainPart.transform.localRotation = localRotation;
+                ApplyMaterials(subObjectRemainPart.GetComponent<MeshRenderer>(), initialMaterial, RemainPartSliceMaterial);
 
                 Slice_Recursive(currentSubObjectToSlice, subObjectSlicedPart.transform,
                     subObjectRemainPart.transform);
@@ -146,8 +166,16 @@ public class SliceExecutor : MonoBehaviour
         }
     }
 
-    public void UpdateRollProgressMaterialValueY(float floatValue)
+    private void ApplyMaterials(MeshRenderer renderer, Material mainMaterial, Material slicedFaceMaterial)
     {
-        RolledSliceMaterial.SetFloat("_PointY", floatValue);
+        var newMaterialsArray = renderer.materials;
+        newMaterialsArray[0] = mainMaterial;
+        for (int i = 1; i < renderer.materials.Length; i++)
+        {
+            Debug.Log(renderer.gameObject.name + ": " + mainMaterial.name + ";;; " + slicedFaceMaterial.name);
+            newMaterialsArray[i] = slicedFaceMaterial;
+        }
+
+        renderer.materials = newMaterialsArray;
     }
 }

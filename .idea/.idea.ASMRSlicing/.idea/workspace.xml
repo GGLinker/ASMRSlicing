@@ -3,16 +3,15 @@
   <component name="ChangeListManager">
     <list default="true" id="5cf56060-318d-47bf-8477-2a8b72611c11" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.ASMRSlicing/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.ASMRSlicing/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Animations/GameOverTitle/Appear.anim" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Animations/GameOverTitle/Appear.anim" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Animations/GameOverTitle/Fade.anim" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Animations/GameOverTitle/Fade.anim" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Materials/RollProgressed.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Materials/RollProgressed.mat" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scenes/SampleScene.unity" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scenes/SampleScene.unity.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Prefabs/Knife.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Prefabs/Knife.prefab" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Presets/NormalTexture.preset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Presets/NormalTexture.preset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Presets/UtilityTexture.preset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Presets/UtilityTexture.preset" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scenes/TestScene.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/TestScene.unity" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Gameplay/Movement/TranslateMovement.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Gameplay/Movement/TranslateMovement.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/TextMesh Pro/Resources/Fonts &amp; Materials/LiberationSans SDF - Fallback.asset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/TextMesh Pro/Resources/Fonts &amp; Materials/LiberationSans SDF - Fallback.asset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ProjectSettings/EditorBuildSettings.asset" beforeDir="false" afterPath="$PROJECT_DIR$/ProjectSettings/EditorBuildSettings.asset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ProjectSettings/ProjectSettings.asset" beforeDir="false" afterPath="$PROJECT_DIR$/ProjectSettings/ProjectSettings.asset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Gameplay/Movement/KnifeMovement.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Gameplay/Movement/KnifeMovement.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Gameplay/Slicing/SliceExecutor.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Gameplay/Slicing/SliceExecutor.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Packages/manifest.json" beforeDir="false" afterPath="$PROJECT_DIR$/Packages/manifest.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Packages/packages-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/Packages/packages-lock.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -20,6 +19,7 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="HighlightingSettingsPerFile">
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/ab7de6937a4448b0a6ccd59e9820599a157200/21/cedb122b/Mesh.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/ab7de6937a4448b0a6ccd59e9820599a157200/4f/bb41b78b/GameObject.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/GameSession.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/Gameplay/Slicing/DestroyingPlane.cs" root0="FORCE_HIGHLIGHTING" />
@@ -84,7 +84,9 @@
       <option name="presentableId" value="Default" />
       <updated>1687259680780</updated>
       <workItem from="1687259708814" duration="8603000" />
-      <workItem from="1687354438674" duration="997000" />
+      <workItem from="1687354438674" duration="1024000" />
+      <workItem from="1687356197885" duration="2236000" />
+      <workItem from="1696320004019" duration="12551000" />
     </task>
     <servers />
   </component>

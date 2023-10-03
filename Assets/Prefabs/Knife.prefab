@@ -10,6 +10,8 @@ GameObject:
   m_Component:
   - component: {fileID: 1956113364477005948}
   - component: {fileID: 2204876976466374017}
+  - component: {fileID: 4036431000199070957}
+  - component: {fileID: 5984134642769589011}
   m_Layer: 0
   m_Name: Knife
   m_TagString: Untagged
@@ -46,6 +48,43 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0322f0b222c96734eaa07edc939d4481, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  bAllowedToSplitObject: 1
+  slicingObjectsTag: 
+  targetInfo:
+    targetPosition: {x: 0, y: 0, z: 0}
+    movementSpeed: 0
+  reverseMotionSpeed: 0
+--- !u!114 &4036431000199070957
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1183973985763429062}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d843702145f7b574ebae6cc7307fa955, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &5984134642769589011
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1183973985763429062}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4872fa03ee932ad42a5c71d6749fec8b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  SlicePlane: {fileID: 0}
+  SlicedObject: {fileID: 0}
+  RolledSliceMaterial: {fileID: 2100000, guid: 1214c8435cd52ea4aa436461e93a7464, type: 2}
+  SlicedFaceMaterial: {fileID: 2100000, guid: 87cd6e3f78be0514fb845a784e4c352f, type: 2}
+  RemainPartSliceMaterial: {fileID: 2100000, guid: fb02827226ef91f49994eb3713975932,
+    type: 2}
+  bFullySliced: 0
 --- !u!1 &5331234111427397149
 GameObject:
   m_ObjectHideFlags: 0

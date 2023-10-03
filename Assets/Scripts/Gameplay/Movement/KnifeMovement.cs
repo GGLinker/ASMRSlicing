@@ -1,8 +1,6 @@
 using System;
 using System.Collections;
 using UnityEngine;
-using UnityEngine.Analytics;
-using UnityEngine.Serialization;
 
 [RequireComponent(typeof(TranslateMovement))]
 [RequireComponent(typeof(SliceExecutor))]
@@ -15,21 +13,21 @@ public class KnifeMovement : MonoBehaviour
     [SerializeField] private String slicingObjectsTag;
     [SerializeField] private TranslateMovement.TargetInfo targetInfo;
     [SerializeField] private float reverseMotionSpeed;
-    private TranslateMovement.TargetInfo reverseTargetInfo;
+    private TranslateMovement.TargetInfo _reverseTargetInfo;
 
-    private TranslateMovement movementComponent;
-    private SliceExecutor sliceExecutorComponent;
+    private TranslateMovement _movementComponent;
+    private SliceExecutor _sliceExecutorComponent;
 
-    private bool bMotionStopped;
-    private float absoluteDistance, minReachedDistance;
+    private bool _bMotionStopped;
+    private float _totalDistance, _minReachedDistance;
 
     private void Awake()
     {
-        reverseTargetInfo.targetPosition = gameObject.transform.position;
-        reverseTargetInfo.movementSpeed = reverseMotionSpeed;
+        _reverseTargetInfo.targetPosition = gameObject.transform.position;
+        _reverseTargetInfo.movementSpeed = reverseMotionSpeed;
         
-        movementComponent = GetComponent<TranslateMovement>();
-        sliceExecutorComponent = GetComponent<SliceExecutor>();
+        _movementComponent = GetComponent<TranslateMovement>();
+        _sliceExecutorComponent = GetComponent<SliceExecutor>();
     }
 
     private void Start()
@@ -43,50 +41,48 @@ public class KnifeMovement : MonoBehaviour
         if (!bAllowedToSplitObject || !other.gameObject.CompareTag(slicingObjectsTag)) return;
         
         bAllowedToSplitObject = false;
-        sliceExecutorComponent.Slice();
-        minReachedDistance = absoluteDistance;
+        _sliceExecutorComponent.Slice();
+        _minReachedDistance = _totalDistance = (transform.position - targetInfo.targetPosition).magnitude;
     }
     IEnumerator UpdateSliceProgressInBendingMaterial()
     {
-        absoluteDistance = Vector3.Distance(transform.position, targetInfo.targetPosition);
-        minReachedDistance = absoluteDistance;
         while (true)
         {
-            var reachedDistance = Vector3.Distance(transform.position, targetInfo.targetPosition);
-            if (reachedDistance >= minReachedDistance)
+            var reachedDistance = (transform.position - targetInfo.targetPosition).magnitude;
+            if (reachedDistance >= _minReachedDistance)
             {
                 yield return null;
                 continue;
             }
 
-            minReachedDistance = reachedDistance;
-            sliceExecutorComponent.UpdateRollProgressMaterialValueY(Mathf.Lerp(-.75f, 1f, minReachedDistance / absoluteDistance));
+            _minReachedDistance = reachedDistance;
+            _sliceExecutorComponent.UpdateBendMaterialValue(Mathf.Lerp(0, 1, 1 - _minReachedDistance / _totalDistance));
             yield return null;
         }
     }
 
     public void SetupMovement(bool bReverse)
     {
-        movementComponent.SetupMovement(gameObject.transform, bReverse ? reverseTargetInfo : targetInfo);
+        _movementComponent.SetupMovement(gameObject.transform, bReverse ? _reverseTargetInfo : targetInfo);
     }
     public void ManageMovement(bool bMove)
     {
-        bMotionStopped = !bMove;
+        _bMotionStopped = !bMove;
         if (bMove)
         {
-            movementComponent.OnTargetAchieved += TargetAchieved;
+            _movementComponent.OnTargetAchieved += TargetAchieved;
         }
         else
         {
             Debug.Log("Movement stopped before target has been achieved");
-            movementComponent.OnTargetAchieved -= TargetAchieved;
+            _movementComponent.OnTargetAchieved -= TargetAchieved;
         }
-        movementComponent.ManageMovement(bMove);
+        _movementComponent.ManageMovement(bMove);
     }
     private void TargetAchieved()
     {
-        movementComponent.OnTargetAchieved -= TargetAchieved;
+        _movementComponent.OnTargetAchieved -= TargetAchieved;
         Debug.Log("Movement end achieved");
-        if(!bMotionStopped) this.OnTargetAchieved?.Invoke();
+        if(!_bMotionStopped) this.OnTargetAchieved?.Invoke();
     }
 }
