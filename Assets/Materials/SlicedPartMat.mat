@@ -114,7 +114,7 @@ Material:
     - _AlphaClip: 0
     - _BUILTIN_QueueControl: 0
     - _BUILTIN_QueueOffset: 0
-    - _BendProgress: 0.924506
+    - _BendProgress: 0.9232476
     - _BendStrength: 2.11
     - _Blend: 0
     - _BlendOp: 0
@@ -152,6 +152,7 @@ Material:
     - _OutlineTextureType: 0
     - _OutlineWidth: 1
     - _Parallax: 0.02
+    - _QueueControl: 0
     - _QueueOffset: 0
     - _RampBands: 4
     - _RampBandsSmoothing: 0.1

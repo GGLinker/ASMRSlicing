@@ -71,8 +71,8 @@ public class SliceExecutor : MonoBehaviour
                 remainPartSliceMaterial);
 
             Slice_Recursive(slicedObject.transform, slicedPart, remainPart);
-            CopyComponents(remainPart);
-            AddPhysicalComponentsOnSlicedSubObjects(slicedPart);
+            CopyComponentsToRemainPart(remainPart);
+            AddComponentsToSlicedPart(slicedPart);
 
             Destroy(slicedObject);
             slicedObject = remainPart.gameObject;
@@ -133,11 +133,15 @@ public class SliceExecutor : MonoBehaviour
                 subObjectSlicedPart.localRotation = localRotation;
                 ApplyMaterials(subObjectSlicedPart.GetComponent<MeshRenderer>(), bendMeshMaterial, slicedFaceMaterial);
                 
+                AddComponentsToSlicedPart(subObjectSlicedPart);
+
                 subObjectRemainPart.parent = remainRoot;
                 subObjectRemainPart.localPosition = localPosition;
                 subObjectRemainPart.localRotation = localRotation;
                 ApplyMaterials(subObjectRemainPart.GetComponent<MeshRenderer>(), initialMaterial, remainPartSliceMaterial);
-
+                
+                CopyComponentsToRemainPart(subObjectRemainPart);
+                
                 Slice_Recursive(currentSubObjectToSlice, subObjectSlicedPart, subObjectRemainPart);
             }
             else
@@ -149,7 +153,7 @@ public class SliceExecutor : MonoBehaviour
         }
     }
     
-    private void CopyComponents(Transform remainPart)
+    private void CopyComponentsToRemainPart(Transform remainPart)
     {
         remainPart.tag = KnifeMovement.SLICING_OBJECTS_TAG;
         
@@ -162,23 +166,20 @@ public class SliceExecutor : MonoBehaviour
         rigidBody.useGravity = false;
         rigidBody.isKinematic = true;
 
-        var boxCollider = remainPart.gameObject.AddComponent<BoxCollider>();
-        var oldCollider = slicedObject.GetComponent<BoxCollider>();
-        boxCollider.isTrigger = oldCollider.isTrigger;
-        boxCollider.center = oldCollider.center;
-        boxCollider.size = oldCollider.size;
+        var meshCollider = remainPart.gameObject.AddComponent<MeshCollider>();
+        var oldCollider = slicedObject.GetComponent<MeshCollider>();
+        meshCollider.isTrigger = oldCollider.isTrigger;
     }
-    private void AddPhysicalComponentsOnSlicedSubObjects(Transform parent)
+    private void AddComponentsToSlicedPart(Transform slicedPart)
     {
-        var rigidBody = parent.gameObject.AddComponent<Rigidbody>();
+        slicedPart.tag = KnifeMovement.SLICING_OBJECTS_TAG;
+        
+        var rigidBody = slicedPart.gameObject.AddComponent<Rigidbody>();
         rigidBody.useGravity = false;
         rigidBody.isKinematic = true;
 
-        var boxCollider = parent.gameObject.AddComponent<BoxCollider>();
-        var oldCollider = slicedObject.GetComponent<BoxCollider>();
-        boxCollider.isTrigger = true;
-        boxCollider.center = oldCollider.center;
-        boxCollider.size = oldCollider.size;
+        var meshCollider = slicedPart.gameObject.AddComponent<MeshCollider>();
+        meshCollider.isTrigger = true;
     }
 
     private void ApplyMaterials(MeshRenderer meshRenderer, Material mainMaterial, Material slicedMaterial)
