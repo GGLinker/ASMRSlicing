@@ -70,7 +70,7 @@ public class KnifeMovement : MonoBehaviour
     {
         _movementComponent.SetupMovement(gameObject.transform, bReverse ? _reverseTargetInfo : _cutTargetInfo);
     }
-    public void ManageMovement(bool bMove)
+    public void Move(bool bMove)
     {
         _bMotionStopped = !bMove;
         if (bMove)
@@ -87,7 +87,6 @@ public class KnifeMovement : MonoBehaviour
     private void TargetAchieved(object sender, EventArgs args)
     {
         _movementComponent.OnTargetAchieved -= TargetAchieved;
-        Debug.Log("Movement end achieved");
-        if(!_bMotionStopped) this.OnTargetAchieved?.Invoke(this, EventArgs.Empty);
+        if(!_bMotionStopped) OnTargetAchieved?.Invoke(this, EventArgs.Empty);
     }
 }

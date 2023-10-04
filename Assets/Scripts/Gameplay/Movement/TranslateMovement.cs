@@ -39,9 +39,9 @@ public class TranslateMovement : MonoBehaviour
             throw new Exception("Owning object passed in setup is invalid");
         }
 
-        this._owningObject = owningObject;
+        _owningObject = owningObject;
         _info = targetInfo;
-        var position = this._owningObject.position;
+        var position = _owningObject.position;
         _movementDirection = (targetInfo.targetPosition - position).normalized;
     }
 

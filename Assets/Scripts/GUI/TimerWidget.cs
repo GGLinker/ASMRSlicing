@@ -8,9 +8,8 @@ public class TimerWidget : MonoBehaviour
 
     private void Start()
     {
-        GameSession.Instance.OnPreMatchCountdownRequest += (sender, amount) =>
+        GameSession.Instance.OnPreMatchCountdownRequest += (_, amount) =>
         {
-            Debug.Log("!!!!");
             StartCoroutine(Countdown(amount));
         };
         textWidget.gameObject.SetActive(false);

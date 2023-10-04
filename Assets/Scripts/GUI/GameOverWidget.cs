@@ -11,7 +11,7 @@ public class GameOverWidget : MonoBehaviour
     private void Start()
     {
         titleWidgetAnimator.gameObject.SetActive(false);
-        GameSession.Instance.OnGameOver += (sender, args) =>
+        GameSession.Instance.OnGameOver += (_,_) =>
         {
             StartCoroutine(AnimationCycle());
         };

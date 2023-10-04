@@ -36,11 +36,12 @@ public class GameSession : MonoBehaviour
         _inputHandler.touchStateChanged += HandleInputEvent;
 
         //Update slicing object ref & binding to passing knife's position
-        sliceExecutor.OnSliceComplete += (slicedPart, remainPart) =>
+        sliceExecutor.OnSliceComplete += (sender, sliceParts) =>
         {
-            slicingObjectMovement = remainPart.GetComponent<SlicingObjectMovement>();
-            slicingObjectMovement.OnMotionEnded += (sender, args) => GameOver();
+            slicingObjectMovement = sliceParts.remainPart.GetComponent<SlicingObjectMovement>();
+            slicingObjectMovement.OnMotionEnded += (_,_) => GameOver();
         };
+        slicingObjectMovement.OnMotionEnded += (_,_) => GameOver();
     }
     private IEnumerator Start()
     {
@@ -52,10 +53,10 @@ public class GameSession : MonoBehaviour
     #region GAME LOOP
     public void GameFlow()
     {
+        slicingObjectMovement.Move(false);
         knifeMovement.bAllowedToSplitObject = true;
         slicingObjectMovement.Move(true);
         _bAllowedInput = true;
-        slicingObjectMovement.OnMotionEnded += (sender, args) => GameOver();
     }
     private void GameOver()
     {
@@ -80,38 +81,31 @@ public class GameSession : MonoBehaviour
         knifeMovement.OnTargetAchieved -= KnifeReverseMotionEnded;
         if (bCutBegan)
         {
-            Debug.Log("Forward movement started");
+            Debug.Log("Cut movement started");
             slicingObjectMovement.Move(false);
             knifeMovement.OnTargetAchieved += KnifeForwardMotionEnded;
             knifeMovement.SetupMovement(false);
-            knifeMovement.ManageMovement(true);
+            knifeMovement.Move(true);
         }
         else
         {
-            knifeMovement.ManageMovement(false);
+            knifeMovement.Move(false);
             Debug.Log("Reverse movement started");
             _bAllowedInput = false;
             knifeMovement.OnTargetAchieved += KnifeReverseMotionEnded;
             knifeMovement.SetupMovement(true);
-            knifeMovement.ManageMovement(true);
+            knifeMovement.Move(true);
         }
     }
     private void KnifeForwardMotionEnded(object sender, EventArgs args)
     {
-        Debug.Log("Forward movement ended");
+        Debug.Log("Cut movement ended");
         
         knifeMovement.OnTargetAchieved -= KnifeForwardMotionEnded;
         knifeMovement.bAllowedToSplitObject = true;
         
-        var splitPartRigidbody = sliceExecutor.GetLastSlicedPart()?.GetComponent<Rigidbody>();
-        if (splitPartRigidbody != null)
-        {
-            splitPartRigidbody.useGravity = true;
-            splitPartRigidbody.isKinematic = false;
-            splitPartRigidbody.AddForce(new Vector3(0, 0, -1) * 30);
-            splitPartRigidbody.AddTorque(new Vector3(-1, 0, 0) * 30);
-        }
-        
+        sliceExecutor.ThrowOffSlicedPart();
+
         //simulate "release touch" event
         HandleInputEvent(this, false);
     }

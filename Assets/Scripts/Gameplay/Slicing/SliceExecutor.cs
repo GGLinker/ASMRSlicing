@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using EzySlice;
 
@@ -9,17 +10,20 @@ public class SliceExecutor : MonoBehaviour
     [SerializeField] private Material slicedFaceMaterial;
     [SerializeField] private Material remainPartSliceMaterial;
 
-    public delegate void SliceComplete(GameObject slicedPart, GameObject remainPart);
-    public event SliceComplete OnSliceComplete;
+    [SerializeField] private Vector3 throwOffForce;
+    [SerializeField] private Vector3 throwOffTorque;
 
-    [HideInInspector] public bool bFullySliced;
+    public class CompletedSliceEventArgs : EventArgs
+    {
+        public GameObject slicedPart;
+        public GameObject remainPart;
+    }
+    public event EventHandler<CompletedSliceEventArgs> OnSliceComplete;
+
+    public bool bFullySliced { get; private set; }
 
     private GameObject _hiddenSlicedObjectCopy;
     private GameObject _lastSlicedPart;
-    public GameObject GetLastSlicedPart()
-    {
-        return _lastSlicedPart;
-    }
 
     private void Start()
     {
@@ -40,46 +44,53 @@ public class SliceExecutor : MonoBehaviour
         Destroy(slicedObject);
         _hiddenSlicedObjectCopy.SetActive(true);
         slicedObject = _hiddenSlicedObjectCopy;
-        OnSliceComplete?.Invoke(_lastSlicedPart, slicedObject);
+        OnSliceComplete?.Invoke(this, new CompletedSliceEventArgs()
+        {
+            remainPart = slicedObject,
+            slicedPart = _lastSlicedPart
+        });
         
         CopyAndHideSlicedObjectInstance();
     }
     
-    public GameObject Slice()
+    public void Slice()
     {
         SlicedHull hull = slicedObject.Slice(slicePlane.position, slicePlane.up);
-        GameObject slicedPart = slicedObject, remainPart = slicedObject;
+        Transform slicedPart = slicedObject.transform, remainPart = slicedObject.transform;
         if (hull != null)
         {
-            slicedPart = hull.CreateUpperHull(slicedObject);
+            slicedPart = hull.CreateUpperHull(slicedObject).transform;
             ApplyMaterials(
                 slicedPart.GetComponent<MeshRenderer>(), 
                 bendMeshMaterial,
                 slicedFaceMaterial);
-            remainPart = hull.CreateLowerHull(slicedObject);
+            remainPart = hull.CreateLowerHull(slicedObject).transform;
             ApplyMaterials(
                 remainPart.GetComponent<MeshRenderer>(), 
                 slicedObject.GetComponent<MeshRenderer>().material,
                 remainPartSliceMaterial);
 
-            Slice_Recursive(slicedObject, slicedPart.transform, remainPart.transform);
-            CopyComponents(remainPart, slicedPart);
+            Slice_Recursive(slicedObject.transform, slicedPart, remainPart);
+            CopyComponents(remainPart);
+            AddPhysicalComponentsOnSlicedSubObjects(slicedPart);
 
             Destroy(slicedObject);
-            slicedObject = remainPart;
+            slicedObject = remainPart.gameObject;
         }
-        else if (slicedObject.transform.position.z < slicePlane.transform.position.z)
+        else if (slicedObject.transform.position.z < slicePlane.position.z)
         {
-            slicedPart = slicedObject;
+            slicedPart = slicedObject.transform;
             bFullySliced = true;
             Debug.Log("Fully sliced");
         }
-        else return slicedObject;
+        else return;
         
-        _lastSlicedPart = slicedPart;
-        OnSliceComplete?.Invoke(slicedPart, remainPart);
-
-        return slicedPart;
+        _lastSlicedPart = slicedPart.gameObject;
+        OnSliceComplete?.Invoke(this, new CompletedSliceEventArgs()
+        {
+            remainPart = remainPart.gameObject,
+            slicedPart = slicedPart.gameObject
+        });
     }
     
     public void UpdateBendMaterialValue(float floatValue)
@@ -87,79 +98,87 @@ public class SliceExecutor : MonoBehaviour
         bendMeshMaterial.SetFloat("_BendProgress", floatValue);
         slicedFaceMaterial.SetFloat("_BendProgress", floatValue);
     }
-    private void CopyComponents(GameObject remainPart, GameObject slicedPart)
+
+
+    public void ThrowOffSlicedPart()
     {
-        //Remain
+        if (!_lastSlicedPart) return;
+        var splitPartRigidbody = _lastSlicedPart.GetComponent<Rigidbody>();
+        if (!splitPartRigidbody) return;
+
+        splitPartRigidbody.useGravity = true;
+        splitPartRigidbody.isKinematic = false;
+        splitPartRigidbody.AddForce(throwOffForce);
+        splitPartRigidbody.AddTorque(throwOffTorque);
+    }
+
+    private void Slice_Recursive(Transform operatingSubObject, Transform slicedRoot, Transform remainRoot)
+    {
+        for (int i = 0; i < operatingSubObject.childCount; i++)
+        {
+            Transform currentSubObjectToSlice = operatingSubObject.GetChild(i);
+            
+            Material initialMaterial = currentSubObjectToSlice.GetComponent<MeshRenderer>().materials[0];
+
+            var localPosition = currentSubObjectToSlice.localPosition;
+            var localRotation = currentSubObjectToSlice.localRotation;
+            SlicedHull hull = currentSubObjectToSlice.gameObject.Slice(slicePlane.position, slicePlane.up);
+            if (hull != null)
+            {
+                Transform subObjectSlicedPart = hull.CreateUpperHull(currentSubObjectToSlice.gameObject).transform;
+                Transform subObjectRemainPart = hull.CreateLowerHull(currentSubObjectToSlice.gameObject).transform;
+                
+                subObjectSlicedPart.parent = slicedRoot;
+                subObjectSlicedPart.localPosition = localPosition;
+                subObjectSlicedPart.localRotation = localRotation;
+                ApplyMaterials(subObjectSlicedPart.GetComponent<MeshRenderer>(), bendMeshMaterial, slicedFaceMaterial);
+                
+                subObjectRemainPart.parent = remainRoot;
+                subObjectRemainPart.localPosition = localPosition;
+                subObjectRemainPart.localRotation = localRotation;
+                ApplyMaterials(subObjectRemainPart.GetComponent<MeshRenderer>(), initialMaterial, remainPartSliceMaterial);
+
+                Slice_Recursive(currentSubObjectToSlice, subObjectSlicedPart, subObjectRemainPart);
+            }
+            else
+            {
+                currentSubObjectToSlice.parent = currentSubObjectToSlice.position.z >= slicePlane.position.z ? remainRoot : slicedRoot;
+                currentSubObjectToSlice.localPosition = localPosition;
+                currentSubObjectToSlice.localRotation = localRotation;
+            }
+        }
+    }
+    
+    private void CopyComponents(Transform remainPart)
+    {
         remainPart.tag = KnifeMovement.SLICING_OBJECTS_TAG;
         
-        var translateMovement = remainPart.AddComponent<TranslateMovement>();
+        var translateMovement = remainPart.gameObject.AddComponent<TranslateMovement>();
         translateMovement.SetupMovementComponent(slicedObject.GetComponent<TranslateMovement>());
-        var slicingObjectMovement = remainPart.AddComponent<SlicingObjectMovement>();
+        var slicingObjectMovement = remainPart.gameObject.AddComponent<SlicingObjectMovement>();
         slicingObjectMovement.SetupComponent(slicedObject.GetComponent<SlicingObjectMovement>());
 
-        var rigidBody = remainPart.AddComponent<Rigidbody>();
+        var rigidBody = remainPart.gameObject.AddComponent<Rigidbody>();
         rigidBody.useGravity = false;
         rigidBody.isKinematic = true;
 
-        var boxCollider = remainPart.AddComponent<BoxCollider>();
+        var boxCollider = remainPart.gameObject.AddComponent<BoxCollider>();
         var oldCollider = slicedObject.GetComponent<BoxCollider>();
         boxCollider.isTrigger = oldCollider.isTrigger;
         boxCollider.center = oldCollider.center;
         boxCollider.size = oldCollider.size;
-        
-        //Sliced
-        AddPhysicalComponentsOnSlicedSubObjects(slicedPart);
     }
-    private void AddPhysicalComponentsOnSlicedSubObjects(GameObject parent)
+    private void AddPhysicalComponentsOnSlicedSubObjects(Transform parent)
     {
-        var rigidBody = parent.AddComponent<Rigidbody>();
+        var rigidBody = parent.gameObject.AddComponent<Rigidbody>();
         rigidBody.useGravity = false;
         rigidBody.isKinematic = true;
 
-        var boxCollider = parent.AddComponent<BoxCollider>();
+        var boxCollider = parent.gameObject.AddComponent<BoxCollider>();
         var oldCollider = slicedObject.GetComponent<BoxCollider>();
         boxCollider.isTrigger = true;
         boxCollider.center = oldCollider.center;
         boxCollider.size = oldCollider.size;
-    }
-
-    
-    private void Slice_Recursive(GameObject operatingSubObject, Transform slicedRoot, Transform remainRoot)
-    {
-        for (int i = 0; i < operatingSubObject.transform.childCount; i++)
-        {
-            GameObject currentSubObjectToSlice = operatingSubObject.transform.GetChild(i).gameObject;
-            
-            Material initialMaterial = currentSubObjectToSlice.GetComponent<MeshRenderer>().materials[0];
-
-            var localPosition = currentSubObjectToSlice.transform.localPosition;
-            var localRotation = currentSubObjectToSlice.transform.localRotation;
-            SlicedHull hull = currentSubObjectToSlice.Slice(slicePlane.position, slicePlane.up);
-            if (hull != null)
-            {
-                GameObject subObjectSlicedPart = hull.CreateUpperHull(currentSubObjectToSlice);
-                GameObject subObjectRemainPart = hull.CreateLowerHull(currentSubObjectToSlice);
-                
-                subObjectSlicedPart.transform.parent = slicedRoot;
-                subObjectSlicedPart.transform.localPosition = localPosition;
-                subObjectSlicedPart.transform.localRotation = localRotation;
-                ApplyMaterials(subObjectSlicedPart.GetComponent<MeshRenderer>(), bendMeshMaterial, slicedFaceMaterial);
-                
-                subObjectRemainPart.transform.parent = remainRoot;
-                subObjectRemainPart.transform.localPosition = localPosition;
-                subObjectRemainPart.transform.localRotation = localRotation;
-                ApplyMaterials(subObjectRemainPart.GetComponent<MeshRenderer>(), initialMaterial, remainPartSliceMaterial);
-
-                Slice_Recursive(currentSubObjectToSlice, subObjectSlicedPart.transform,
-                    subObjectRemainPart.transform);
-            }
-            else
-            {
-                currentSubObjectToSlice.transform.parent = currentSubObjectToSlice.transform.position.z >= slicePlane.transform.position.z ? remainRoot : slicedRoot;
-                currentSubObjectToSlice.transform.localPosition = localPosition;
-                currentSubObjectToSlice.transform.localRotation = localRotation;
-            }
-        }
     }
 
     private void ApplyMaterials(MeshRenderer meshRenderer, Material mainMaterial, Material slicedMaterial)
@@ -168,7 +187,6 @@ public class SliceExecutor : MonoBehaviour
         newMaterialsArray[0] = mainMaterial;
         for (int i = 1; i < meshRenderer.materials.Length; i++)
         {
-            Debug.Log(meshRenderer.gameObject.name + ": " + mainMaterial.name + ";;; " + slicedMaterial.name);
             newMaterialsArray[i] = slicedMaterial;
         }
 

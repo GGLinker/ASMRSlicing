@@ -82,6 +82,8 @@ MonoBehaviour:
   slicedFaceMaterial: {fileID: 2100000, guid: 87cd6e3f78be0514fb845a784e4c352f, type: 2}
   remainPartSliceMaterial: {fileID: 2100000, guid: fb02827226ef91f49994eb3713975932,
     type: 2}
+  throwOffForce: {x: 0, y: 0, z: -30}
+  throwOffTorque: {x: -30, y: 0, z: 0}
   bFullySliced: 0
 --- !u!1 &5331234111427397149
 GameObject:

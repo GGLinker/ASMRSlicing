@@ -4,24 +4,29 @@ using UnityEngine;
 [RequireComponent(typeof(TranslateMovement))]
 public class SlicingObjectMovement : MonoBehaviour
 {
-    [SerializeField] private TranslateMovement.TargetInfo targetInfo;
+    [SerializeField] private float motionSpeed;
+    
     private TranslateMovement _movementComponent;
+    private TranslateMovement.TargetInfo _targetInfo;
 
     public event EventHandler OnMotionEnded;
-    
+
     private void Start()
     {
         Setup();
     }
+    
     private void Setup()
     {
+        _targetInfo.movementSpeed = motionSpeed;
+        _targetInfo.targetPosition = SlicingObjectsTarget.Instance.transform.position;
         _movementComponent = gameObject.GetComponent<TranslateMovement>();
-        _movementComponent.SetupMovement(transform, targetInfo);
+        _movementComponent.SetupMovement(transform, _targetInfo);
     }
 
     public void SetupComponent(SlicingObjectMovement other)
     {
-        targetInfo = other.targetInfo;
+        motionSpeed = other.motionSpeed;
         Setup();
     }
     public void Move(bool bMove)
@@ -29,6 +34,10 @@ public class SlicingObjectMovement : MonoBehaviour
         if (bMove)
         {
             _movementComponent.OnTargetAchieved += TargetAchieved;
+        }
+        else
+        {
+            _movementComponent.OnTargetAchieved -= TargetAchieved;
         }
         _movementComponent.Move(bMove);
     }
