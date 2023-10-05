@@ -53,7 +53,7 @@ MonoBehaviour:
   cutMotionSpeed: 1.3
   reverseMotionSpeed: 2.6
   initialBendingStrength: 2.1
-  initialSlicedFaceBendingStrength: 2.5
+  initialSlicedFaceBendingStrength: 1.5
   cutWidthBendingSensitivity: 0.9
   bendMeshMaterial: {fileID: 2100000, guid: 1214c8435cd52ea4aa436461e93a7464, type: 2}
   slicedFaceMaterial: {fileID: 2100000, guid: 87cd6e3f78be0514fb845a784e4c352f, type: 2}

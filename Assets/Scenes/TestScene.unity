@@ -1603,6 +1603,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2204876976466374017, guid: e59cfbd75ea948e45966838f29195b22,
         type: 3}
+      propertyPath: cutWidthBendingSensitivity
+      value: 1.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2204876976466374017, guid: e59cfbd75ea948e45966838f29195b22,
+        type: 3}
       propertyPath: targetInfo.targetPosition.x
       value: 6.26
       objectReference: {fileID: 0}
