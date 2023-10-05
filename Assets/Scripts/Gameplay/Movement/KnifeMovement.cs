@@ -106,7 +106,6 @@ public class KnifeMovement : MonoBehaviour
         }
         else
         {
-            Debug.Log("Movement stopped before target has been achieved");
             _movementComponent.OnTargetAchieved -= TargetAchieved;
         }
         _movementComponent.Move(bMove);

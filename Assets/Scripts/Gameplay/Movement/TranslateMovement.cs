@@ -38,6 +38,10 @@ public class TranslateMovement : MonoBehaviour
         {
             throw new Exception("Owning object passed in setup is invalid");
         }
+        if (_movementHandler != null)
+        {
+            StopCoroutine(_movementHandler);
+        }
 
         _owningObject = owningObject;
         _info = targetInfo;
