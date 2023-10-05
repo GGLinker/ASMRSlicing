@@ -54,22 +54,25 @@ public class GameSession : MonoBehaviour
     public void GameFlow()
     {
         slicingObjectMovement.Move(false);
-        knifeMovement.bAllowedToSplitObject = true;
+        knifeMovement.Reset();
         slicingObjectMovement.Move(true);
         _bAllowedInput = true;
+    }
+    
+    public void Restart()
+    {
+        sliceExecutor.RespawnSlicedObject();
+        knifeMovement.Reset();
+        OnPreMatchCountdownRequest?.Invoke(this, preMatchTimerDurationInSeconds);
     }
     private void GameOver()
     {
         _bAllowedInput = false;
+        knifeMovement.ReleaseKnife();
         Debug.Log("GAME OVER");
         OnGameOver?.Invoke(this, EventArgs.Empty);
     }
 
-    public void Restart()
-    {
-        sliceExecutor.RespawnSlicedObject();
-        OnPreMatchCountdownRequest?.Invoke(this, preMatchTimerDurationInSeconds);
-    }
     #endregion
     
 
@@ -86,47 +89,41 @@ public class GameSession : MonoBehaviour
         knifeMovement.OnTargetAchieved -= KnifeReverseMotionEnded;
         if (bCut)
         {
-            Debug.Log("Cut movement started");
             slicingObjectMovement.Move(false);
             knifeMovement.OnTargetAchieved += KnifeForwardMotionEnded;
-            knifeMovement.SetupMovement(false);
-            knifeMovement.Move(true);
+            knifeMovement.Cut();
         }
         else
         {
-            knifeMovement.Move(false);
-            Debug.Log("Reverse movement started");
             _bAllowedInput = false;
             knifeMovement.OnTargetAchieved += KnifeReverseMotionEnded;
-            knifeMovement.SetupMovement(true);
-            knifeMovement.Move(true);
+            knifeMovement.ReleaseKnife();
         }
     }
     
-    private void KnifeForwardMotionEnded(object sender, EventArgs args)
+    private void KnifeForwardMotionEnded(object sender, KnifeMovement.KnifeMovementState state)
     {
         Debug.Log("Cut movement ended");
-        
         knifeMovement.OnTargetAchieved -= KnifeForwardMotionEnded;
-        knifeMovement.bAllowedToSplitObject = true;
-        
+
         sliceExecutor.ThrowOffSlicedPart();
-        
         MoveKnife(false);
     }
-    private void KnifeReverseMotionEnded(object sender, EventArgs args)
+    private void KnifeReverseMotionEnded(object sender, KnifeMovement.KnifeMovementState state)
     {
         Debug.Log("Reverse movement ended");
         knifeMovement.OnTargetAchieved -= KnifeReverseMotionEnded;
-        if (knifeMovement.bAllowedToSplitObject)
-        {
-            slicingObjectMovement.Move(true);
-        }
+        
         if (sliceExecutor.bFullySliced)
         {
             GameOver();
             return;
         }
+        if (state == KnifeMovement.KnifeMovementState.Idle)
+        {
+            slicingObjectMovement.Move(true);
+        }
+        
         _bAllowedInput = true;
     }
 }

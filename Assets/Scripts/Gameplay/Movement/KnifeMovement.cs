@@ -6,8 +6,8 @@ using UnityEngine;
 [RequireComponent(typeof(SliceExecutor))]
 public class KnifeMovement : MonoBehaviour
 {
-    public event EventHandler OnTargetAchieved;
-    [HideInInspector] public bool bAllowedToSplitObject = true;
+    public event EventHandler<KnifeMovementState> OnTargetAchieved;
+    
     public static string SLICING_OBJECTS_TAG = "SlicingObject";
     
     [SerializeField] private Transform cutTarget;
@@ -24,26 +24,37 @@ public class KnifeMovement : MonoBehaviour
     private static readonly int BEND_STRENGTH_PROPERTY = Shader.PropertyToID("_BendStrength");
     
     private TranslateMovement.TargetInfo _cutTargetInfo;
-    private TranslateMovement.TargetInfo _reverseTargetInfo;
+    private TranslateMovement.TargetInfo _releaseTargetInfo;
 
     private TranslateMovement _movementComponent;
     private SliceExecutor _sliceExecutorComponent;
-
-    private bool _bMotionStopped;
+    
     private float _totalDistance, _minReachedDistance;
     private float _lastCutPositionZ;
     private bool _bCutAtLeastOnce;
 
+    public enum KnifeMovementState
+    {
+        Idle,
+        Descent,
+        Cut,
+        Release,
+    }
+    private KnifeMovementState _state;
+    private EventHandler _knifeMovementCallback;
+    
     private void Awake()
     {
         _cutTargetInfo.targetPosition = cutTarget.position;
         _cutTargetInfo.movementSpeed = cutMotionSpeed;
         
-        _reverseTargetInfo.targetPosition = transform.position;
-        _reverseTargetInfo.movementSpeed = reverseMotionSpeed;
+        _releaseTargetInfo.targetPosition = transform.position;
+        _releaseTargetInfo.movementSpeed = reverseMotionSpeed;
 
         _movementComponent = GetComponent<TranslateMovement>();
         _sliceExecutorComponent = GetComponent<SliceExecutor>();
+        
+        Reset();
     }
 
     private void Start()
@@ -52,16 +63,46 @@ public class KnifeMovement : MonoBehaviour
         SetupMovement(false);
     }
 
+    public void Cut()
+    {
+        if (_state != KnifeMovementState.Descent)
+        {
+            _state = KnifeMovementState.Cut;
+        }
+
+        Debug.Log("Cut movement started");
+        
+        SetupMovement(false);
+        Move(true);
+    }
+    public void ReleaseKnife()
+    {
+        Move(false);
+        Debug.Log("Reverse movement started");
+        
+        SetupMovement(true);
+        Move(true);
+    }
+
+    public void Reset()
+    {
+        _bCutAtLeastOnce = false;
+        _state = KnifeMovementState.Idle;
+    }
+    
     private void OnTriggerEnter(Collider other)
     {
-        if (!bAllowedToSplitObject || !other.gameObject.CompareTag(SLICING_OBJECTS_TAG)) return;
-        bAllowedToSplitObject = false;
+        if (_state != KnifeMovementState.Cut || !other.gameObject.CompareTag(SLICING_OBJECTS_TAG)) return;
+        _state = KnifeMovementState.Descent;
         
         UpdateBendingStrength(other.transform);
         
         _sliceExecutorComponent.Slice();
         _minReachedDistance = _totalDistance = (transform.position - _cutTargetInfo.targetPosition).magnitude;
     }
+
+    #region MaterialParametersUpdate
+
     IEnumerator UpdateSliceProgressInBendingMaterial()
     {
         while (true)
@@ -93,26 +134,66 @@ public class KnifeMovement : MonoBehaviour
         _lastCutPositionZ = newCutPosition;
     }
 
-    public void SetupMovement(bool bReverse)
+    #endregion
+    
+    #region Movement
+
+    private void SetupMovement(bool bRelease)
     {
-        _movementComponent.SetupMovement(gameObject.transform, bReverse ? _reverseTargetInfo : _cutTargetInfo);
-    }
-    public void Move(bool bMove)
-    {
-        _bMotionStopped = !bMove;
-        if (bMove)
+        switch (_state)
         {
-            _movementComponent.OnTargetAchieved += TargetAchieved;
+            case KnifeMovementState.Cut:
+            case KnifeMovementState.Descent: 
+                _knifeMovementCallback = bRelease ? ReachedTopPoint : ReachedBottomPoint;
+                break;
+            case KnifeMovementState.Release:
+                _knifeMovementCallback = ReachedTopPoint;
+                break;
+        }
+        
+        if (bRelease)
+        {
+            _movementComponent.SetupMovement(gameObject.transform, _releaseTargetInfo);
         }
         else
         {
-            _movementComponent.OnTargetAchieved -= TargetAchieved;
+            _movementComponent.SetupMovement(gameObject.transform, _cutTargetInfo);
         }
+    }
+    
+    private void Move(bool bMove)
+    {
+        if (bMove)
+        {
+            _movementComponent.OnTargetAchieved += _knifeMovementCallback;
+        }
+        else
+        {
+            _movementComponent.OnTargetAchieved -= _knifeMovementCallback;
+        }
+
         _movementComponent.Move(bMove);
     }
-    private void TargetAchieved(object sender, EventArgs args)
+
+    private void ReachedBottomPoint(object sender, EventArgs args)
     {
-        _movementComponent.OnTargetAchieved -= TargetAchieved;
-        if(!_bMotionStopped) OnTargetAchieved?.Invoke(this, EventArgs.Empty);
+        _movementComponent.OnTargetAchieved -= _knifeMovementCallback;
+        
+        _state = KnifeMovementState.Release;
+        
+        OnTargetAchieved?.Invoke(this, _state);
     }
+    private void ReachedTopPoint(object sender, EventArgs args)
+    {
+        _movementComponent.OnTargetAchieved -= _knifeMovementCallback;
+        
+        if (_state != KnifeMovementState.Descent)
+        {
+            _state = KnifeMovementState.Idle;
+        }
+
+        OnTargetAchieved?.Invoke(this, _state);
+    }
+
+    #endregion
 }

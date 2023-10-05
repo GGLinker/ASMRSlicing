@@ -15,6 +15,7 @@ public class SliceExecutor : MonoBehaviour
     [SerializeField] private Vector3 throwOffTorque;
 
     private static readonly int BEND_PROGRESS_PROPERTY = Shader.PropertyToID("_BendProgress");
+    private const string SLICED_SUBOBJECT_NAME_POSTFIX = "_SLICED"; 
     
     public class CompletedSliceEventArgs : EventArgs
     {
@@ -87,6 +88,11 @@ public class SliceExecutor : MonoBehaviour
                 bendMeshMaterial,
                 slicedFaceMaterial);
             remainPart = hull.CreateLowerHull(slicedObject).transform;
+            
+            var oldName = slicedObject.gameObject.name;
+            remainPart.name = oldName;
+            slicedPart.name = oldName + SLICED_SUBOBJECT_NAME_POSTFIX;
+
             ApplyMaterials(
                 remainPart.GetComponent<MeshRenderer>(), 
                 slicedObject.GetComponent<MeshRenderer>().material,
@@ -139,10 +145,14 @@ public class SliceExecutor : MonoBehaviour
             var localPosition = currentSubObjectToSlice.localPosition;
             var localRotation = currentSubObjectToSlice.localRotation;
             SlicedHull hull = currentSubObjectToSlice.gameObject.Slice(slicePlane.position, slicePlane.up);
+
             if (hull != null)
             {
                 Transform subObjectSlicedPart = hull.CreateUpperHull(currentSubObjectToSlice.gameObject).transform;
                 Transform subObjectRemainPart = hull.CreateLowerHull(currentSubObjectToSlice.gameObject).transform;
+                var oldName = currentSubObjectToSlice.gameObject.name;
+                subObjectRemainPart.name = oldName;
+                subObjectSlicedPart.name = oldName + SLICED_SUBOBJECT_NAME_POSTFIX;
                 
                 //Sliced part
                 subObjectSlicedPart.parent = slicedRoot;
@@ -164,7 +174,7 @@ public class SliceExecutor : MonoBehaviour
                 Slice_Recursive(currentSubObjectToSlice, subObjectSlicedPart, subObjectRemainPart);
             }
             else
-            {
+            { 
                 currentSubObjectToSlice.parent = currentSubObjectToSlice.position.z >= slicePlane.position.z ? remainRoot : slicedRoot;
                 currentSubObjectToSlice.localPosition = localPosition;
                 currentSubObjectToSlice.localRotation = localRotation;
