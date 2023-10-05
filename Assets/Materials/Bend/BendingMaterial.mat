@@ -85,8 +85,8 @@ Material:
     m_Floats:
     - _BUILTIN_QueueControl: 0
     - _BUILTIN_QueueOffset: 3
-    - _BendProgress: 0.37673163
-    - _BendStrength: 2.1
+    - _BendProgress: 0.7509363
+    - _BendStrength: 0.23709264
     - _BumpScale: 1
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1

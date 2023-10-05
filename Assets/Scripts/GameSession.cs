@@ -3,7 +3,6 @@ using System.Collections;
 using UnityEngine;
 
 [DisallowMultipleComponent]
-[RequireComponent(typeof(InputHandler))]
 public class GameSession : MonoBehaviour
 {
     #region Singleton
@@ -19,9 +18,8 @@ public class GameSession : MonoBehaviour
     public event EventHandler<int> OnPreMatchCountdownRequest;
     public event EventHandler OnGameOver;
 
-    private InputHandler _inputHandler;
-
     private bool _bAllowedInput;
+    private bool _bGameOver;
 
     private void Awake()
     {
@@ -31,9 +29,9 @@ public class GameSession : MonoBehaviour
             return;
         }
         Instance = this;
-        
-        _inputHandler = GetComponent<InputHandler>();
-        _inputHandler.touchStateChanged += HandleInputEvent;
+
+        knifeMovement.OnFullDescent += KnifeSliceMotionEnded;
+        knifeMovement.OnRelease += KnifeReleaseMotionEnded;
 
         //Update slicing object ref & binding to passing knife's position
         sliceExecutor.OnSliceComplete += (sender, sliceParts) =>
@@ -45,6 +43,8 @@ public class GameSession : MonoBehaviour
     }
     private IEnumerator Start()
     {
+        InputHandler.Instance.touchStateChanged += HandleInputEvent;
+        
         while(OnPreMatchCountdownRequest == null) yield return null;
         OnPreMatchCountdownRequest?.Invoke(this, preMatchTimerDurationInSeconds);
     }
@@ -63,10 +63,14 @@ public class GameSession : MonoBehaviour
     {
         sliceExecutor.RespawnSlicedObject();
         knifeMovement.Reset();
+        _bGameOver = false;
         OnPreMatchCountdownRequest?.Invoke(this, preMatchTimerDurationInSeconds);
     }
     private void GameOver()
     {
+        if (_bGameOver) return;
+        
+        _bGameOver = true;
         _bAllowedInput = false;
         knifeMovement.ReleaseKnife();
         Debug.Log("GAME OVER");
@@ -79,41 +83,34 @@ public class GameSession : MonoBehaviour
     private void HandleInputEvent(object sender, bool bCutBegan)
     {
         if (!_bAllowedInput) return;
-        
+
         MoveKnife(bCutBegan);
     }
+    
+
+    #region KnifeMovement
 
     private void MoveKnife(bool bCut)
     {
-        knifeMovement.OnTargetAchieved -= KnifeForwardMotionEnded;
-        knifeMovement.OnTargetAchieved -= KnifeReverseMotionEnded;
         if (bCut)
         {
             slicingObjectMovement.Move(false);
-            knifeMovement.OnTargetAchieved += KnifeForwardMotionEnded;
             knifeMovement.Cut();
         }
         else
         {
             _bAllowedInput = false;
-            knifeMovement.OnTargetAchieved += KnifeReverseMotionEnded;
             knifeMovement.ReleaseKnife();
         }
     }
     
-    private void KnifeForwardMotionEnded(object sender, KnifeMovement.KnifeMovementState state)
+    private void KnifeSliceMotionEnded(object sender, EventArgs args)
     {
-        Debug.Log("Cut movement ended");
-        knifeMovement.OnTargetAchieved -= KnifeForwardMotionEnded;
-
         sliceExecutor.ThrowOffSlicedPart();
         MoveKnife(false);
     }
-    private void KnifeReverseMotionEnded(object sender, KnifeMovement.KnifeMovementState state)
+    private void KnifeReleaseMotionEnded(object sender, KnifeMovement.KnifeMovementState state)
     {
-        Debug.Log("Reverse movement ended");
-        knifeMovement.OnTargetAchieved -= KnifeReverseMotionEnded;
-        
         if (sliceExecutor.bFullySliced)
         {
             GameOver();
@@ -123,7 +120,12 @@ public class GameSession : MonoBehaviour
         {
             slicingObjectMovement.Move(true);
         }
-        
-        _bAllowedInput = true;
+
+        if (!_bGameOver)
+        {
+            _bAllowedInput = true;
+        }
     }
+
+    #endregion
 }

@@ -24,7 +24,12 @@ public class TranslateMovement : MonoBehaviour
     private TargetInfo _info;
     private Vector3 _movementDirection;
 
-    private Coroutine _movementHandler;
+    private bool _bMoving;
+
+    private void Start()
+    {
+        StartCoroutine(MovementCoroutine());
+    }
 
     public void SetupMovementComponent(TranslateMovement other)
     {
@@ -38,39 +43,32 @@ public class TranslateMovement : MonoBehaviour
         {
             throw new Exception("Owning object passed in setup is invalid");
         }
-        if (_movementHandler != null)
-        {
-            StopCoroutine(_movementHandler);
-        }
-
-        _owningObject = owningObject;
+        
         _info = targetInfo;
-        var position = _owningObject.position;
-        _movementDirection = (targetInfo.targetPosition - position).normalized;
+        _owningObject = owningObject;
+        _movementDirection = (targetInfo.targetPosition - _owningObject.position).normalized;
     }
 
     public void Move(bool bMove)
     {
-        if (bMove)
-        {
-            _movementHandler = StartCoroutine(MovementCoroutine());
-        }
-        else if (_movementHandler != null)
-        {
-            StopCoroutine(_movementHandler);
-        }
+        _bMoving = bMove;
     }
 
     IEnumerator MovementCoroutine()
     {
         for (;;)
         {
-            if (Vector3.Distance(_info.targetPosition, _owningObject.position) < 0.1f)
+            if (_bMoving)
             {
-                OnTargetAchieved?.Invoke(this, EventArgs.Empty);
-                yield break;
+                if ((_info.targetPosition - _owningObject.position).magnitude < 0.1f)
+                {
+                    Move(false);
+                    OnTargetAchieved?.Invoke(this, EventArgs.Empty);
+                }
+
+                _owningObject.Translate(_movementDirection * (_info.movementSpeed * Time.deltaTime), Space.World);
             }
-            _owningObject.Translate(_movementDirection * (_info.movementSpeed * Time.deltaTime), Space.World);
+
             yield return null;
         }
     }

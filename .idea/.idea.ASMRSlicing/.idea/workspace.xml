@@ -3,9 +3,13 @@
   <component name="ChangeListManager">
     <list default="true" id="5cf56060-318d-47bf-8477-2a8b72611c11" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.ASMRSlicing/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.ASMRSlicing/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Materials/Bend/BendingMaterial.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Materials/Bend/BendingMaterial.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Materials/Bend/SlicedPartMat.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Materials/Bend/SlicedPartMat.mat" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/GameSession.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/GameSession.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/Gameplay/Movement/KnifeMovement.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Gameplay/Movement/KnifeMovement.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Gameplay/Movement/TranslateMovement.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Gameplay/Movement/TranslateMovement.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/Gameplay/Slicing/SliceExecutor.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Gameplay/Slicing/SliceExecutor.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Input/InputHandler.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Input/InputHandler.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -81,7 +85,7 @@
       <workItem from="1687259708814" duration="8603000" />
       <workItem from="1687354438674" duration="1024000" />
       <workItem from="1687356197885" duration="2236000" />
-      <workItem from="1696320004019" duration="47532000" />
+      <workItem from="1696320004019" duration="61118000" />
     </task>
     <servers />
   </component>

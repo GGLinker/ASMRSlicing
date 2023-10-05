@@ -1,7 +1,6 @@
 using System;
 using UnityEngine;
 using EzySlice;
-using Unity.VisualScripting;
 
 public class SliceExecutor : MonoBehaviour
 {
@@ -203,7 +202,7 @@ public class SliceExecutor : MonoBehaviour
         rigidBody.useGravity = false;
         rigidBody.isKinematic = true;
 
-        var collider = slicedPart.AddComponent<BoxCollider>();
+        var collider = slicedPart.gameObject.AddComponent<BoxCollider>();
         collider.isTrigger = true;
     }
 
