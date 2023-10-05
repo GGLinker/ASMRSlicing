@@ -14,6 +14,15 @@ public class KnifeMovement : MonoBehaviour
     [SerializeField] private float cutMotionSpeed;
     [SerializeField] private float reverseMotionSpeed;
     
+    [SerializeField] private float initialBendingStrength;
+    [SerializeField] private float initialSlicedFaceBendingStrength;
+    [SerializeField] private float cutWidthBendingSensitivity;
+    
+    [SerializeField] private Material bendMeshMaterial;
+    [SerializeField] private Material slicedFaceMaterial;
+
+    private static readonly int BEND_STRENGTH_PROPERTY = Shader.PropertyToID("_BendStrength");
+    
     private TranslateMovement.TargetInfo _cutTargetInfo;
     private TranslateMovement.TargetInfo _reverseTargetInfo;
 
@@ -22,6 +31,8 @@ public class KnifeMovement : MonoBehaviour
 
     private bool _bMotionStopped;
     private float _totalDistance, _minReachedDistance;
+    private float _lastCutPositionZ;
+    private bool _bCutAtLeastOnce;
 
     private void Awake()
     {
@@ -44,8 +55,10 @@ public class KnifeMovement : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         if (!bAllowedToSplitObject || !other.gameObject.CompareTag(SLICING_OBJECTS_TAG)) return;
-        
         bAllowedToSplitObject = false;
+        
+        UpdateBendingStrength(other.transform);
+        
         _sliceExecutorComponent.Slice();
         _minReachedDistance = _totalDistance = (transform.position - _cutTargetInfo.targetPosition).magnitude;
     }
@@ -64,6 +77,20 @@ public class KnifeMovement : MonoBehaviour
             _sliceExecutorComponent.UpdateBendMaterialValue(Mathf.Lerp(0, 1, 1 - _minReachedDistance / _totalDistance));
             yield return null;
         }
+    }
+
+    void UpdateBendingStrength(Transform slicingObjectTransform)
+    {
+        var newCutPosition = slicingObjectTransform.position.z;
+        if (!_bCutAtLeastOnce)
+        {
+            _lastCutPositionZ = newCutPosition + slicingObjectTransform.gameObject.GetComponent<MeshCollider>().bounds.size.z / 2;
+            _bCutAtLeastOnce = true;
+        }
+        bendMeshMaterial.SetFloat(BEND_STRENGTH_PROPERTY, initialBendingStrength - Mathf.Abs(newCutPosition - _lastCutPositionZ) * cutWidthBendingSensitivity);
+        slicedFaceMaterial.SetFloat(BEND_STRENGTH_PROPERTY, initialSlicedFaceBendingStrength - Mathf.Abs(newCutPosition - _lastCutPositionZ) * cutWidthBendingSensitivity);
+        
+        _lastCutPositionZ = newCutPosition;
     }
 
     public void SetupMovement(bool bReverse)

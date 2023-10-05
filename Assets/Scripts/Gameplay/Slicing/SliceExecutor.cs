@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using EzySlice;
+using Unity.VisualScripting;
 
 public class SliceExecutor : MonoBehaviour
 {
@@ -13,6 +14,8 @@ public class SliceExecutor : MonoBehaviour
     [SerializeField] private Vector3 throwOffForce;
     [SerializeField] private Vector3 throwOffTorque;
 
+    private static readonly int BEND_PROGRESS_PROPERTY = Shader.PropertyToID("_BendProgress");
+    
     public class CompletedSliceEventArgs : EventArgs
     {
         public GameObject slicedPart;
@@ -57,8 +60,27 @@ public class SliceExecutor : MonoBehaviour
     {
         SlicedHull hull = slicedObject.Slice(slicePlane.position, slicePlane.up);
         Transform slicedPart = slicedObject.transform, remainPart = slicedObject.transform;
-        if (hull != null)
+        
+        if (hull == null)
         {
+            var slicedObjectBackBound = 
+                slicedObject.transform.position.z +
+                slicedObject.GetComponent<MeshCollider>().bounds.size.z / 2;
+            
+            if (slicedObjectBackBound < slicePlane.position.z)
+            {
+                //Knife cut after object -> slice cycle ended
+                slicedPart = slicedObject.transform;
+                bFullySliced = true;
+                Debug.Log("Fully sliced");
+            }
+            
+            //Knife cut before object
+            else return;
+        }
+        else 
+        {
+            //Cut
             slicedPart = hull.CreateUpperHull(slicedObject).transform;
             ApplyMaterials(
                 slicedPart.GetComponent<MeshRenderer>(), 
@@ -77,14 +99,8 @@ public class SliceExecutor : MonoBehaviour
             Destroy(slicedObject);
             slicedObject = remainPart.gameObject;
         }
-        else if (slicedObject.transform.position.z < slicePlane.position.z)
-        {
-            slicedPart = slicedObject.transform;
-            bFullySliced = true;
-            Debug.Log("Fully sliced");
-        }
-        else return;
-        
+
+        //Slice completed
         _lastSlicedPart = slicedPart.gameObject;
         OnSliceComplete?.Invoke(this, new CompletedSliceEventArgs()
         {
@@ -95,8 +111,8 @@ public class SliceExecutor : MonoBehaviour
     
     public void UpdateBendMaterialValue(float floatValue)
     {
-        bendMeshMaterial.SetFloat("_BendProgress", floatValue);
-        slicedFaceMaterial.SetFloat("_BendProgress", floatValue);
+        bendMeshMaterial.SetFloat(BEND_PROGRESS_PROPERTY, floatValue);
+        slicedFaceMaterial.SetFloat(BEND_PROGRESS_PROPERTY, floatValue);
     }
 
 
@@ -128,6 +144,7 @@ public class SliceExecutor : MonoBehaviour
                 Transform subObjectSlicedPart = hull.CreateUpperHull(currentSubObjectToSlice.gameObject).transform;
                 Transform subObjectRemainPart = hull.CreateLowerHull(currentSubObjectToSlice.gameObject).transform;
                 
+                //Sliced part
                 subObjectSlicedPart.parent = slicedRoot;
                 subObjectSlicedPart.localPosition = localPosition;
                 subObjectSlicedPart.localRotation = localRotation;
@@ -135,6 +152,7 @@ public class SliceExecutor : MonoBehaviour
                 
                 AddComponentsToSlicedPart(subObjectSlicedPart);
 
+                //Remain part
                 subObjectRemainPart.parent = remainRoot;
                 subObjectRemainPart.localPosition = localPosition;
                 subObjectRemainPart.localRotation = localRotation;
@@ -142,6 +160,7 @@ public class SliceExecutor : MonoBehaviour
                 
                 CopyComponentsToRemainPart(subObjectRemainPart);
                 
+                //Continue...
                 Slice_Recursive(currentSubObjectToSlice, subObjectSlicedPart, subObjectRemainPart);
             }
             else
@@ -166,20 +185,16 @@ public class SliceExecutor : MonoBehaviour
         rigidBody.useGravity = false;
         rigidBody.isKinematic = true;
 
-        var meshCollider = remainPart.gameObject.AddComponent<MeshCollider>();
-        var oldCollider = slicedObject.GetComponent<MeshCollider>();
-        meshCollider.isTrigger = oldCollider.isTrigger;
+        remainPart.gameObject.AddComponent<MeshCollider>();
     }
     private void AddComponentsToSlicedPart(Transform slicedPart)
     {
-        slicedPart.tag = KnifeMovement.SLICING_OBJECTS_TAG;
-        
         var rigidBody = slicedPart.gameObject.AddComponent<Rigidbody>();
         rigidBody.useGravity = false;
         rigidBody.isKinematic = true;
 
-        var meshCollider = slicedPart.gameObject.AddComponent<MeshCollider>();
-        meshCollider.isTrigger = true;
+        var collider = slicedPart.AddComponent<BoxCollider>();
+        collider.isTrigger = true;
     }
 
     private void ApplyMaterials(MeshRenderer meshRenderer, Material mainMaterial, Material slicedMaterial)

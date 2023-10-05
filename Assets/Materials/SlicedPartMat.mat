@@ -114,8 +114,8 @@ Material:
     - _AlphaClip: 0
     - _BUILTIN_QueueControl: 0
     - _BUILTIN_QueueOffset: 0
-    - _BendProgress: 0.9232476
-    - _BendStrength: 2.11
+    - _BendProgress: 0.39968255
+    - _BendStrength: 2.5
     - _Blend: 0
     - _BlendOp: 0
     - _BumpScale: 1

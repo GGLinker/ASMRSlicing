@@ -3,7 +3,12 @@ guid: 4872fa03ee932ad42a5c71d6749fec8b
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - slicePlane: {instanceID: 0}
+  - slicedObject: {instanceID: 0}
+  - bendMeshMaterial: {fileID: 2100000, guid: 1214c8435cd52ea4aa436461e93a7464, type: 2}
+  - slicedFaceMaterial: {instanceID: 0}
+  - remainPartSliceMaterial: {instanceID: 0}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

@@ -77,9 +77,14 @@ public class GameSession : MonoBehaviour
     {
         if (!_bAllowedInput) return;
         
+        MoveKnife(bCutBegan);
+    }
+
+    private void MoveKnife(bool bCut)
+    {
         knifeMovement.OnTargetAchieved -= KnifeForwardMotionEnded;
         knifeMovement.OnTargetAchieved -= KnifeReverseMotionEnded;
-        if (bCutBegan)
+        if (bCut)
         {
             Debug.Log("Cut movement started");
             slicingObjectMovement.Move(false);
@@ -97,6 +102,7 @@ public class GameSession : MonoBehaviour
             knifeMovement.Move(true);
         }
     }
+    
     private void KnifeForwardMotionEnded(object sender, EventArgs args)
     {
         Debug.Log("Cut movement ended");
@@ -105,9 +111,8 @@ public class GameSession : MonoBehaviour
         knifeMovement.bAllowedToSplitObject = true;
         
         sliceExecutor.ThrowOffSlicedPart();
-
-        //simulate "release touch" event
-        HandleInputEvent(this, false);
+        
+        MoveKnife(false);
     }
     private void KnifeReverseMotionEnded(object sender, EventArgs args)
     {
