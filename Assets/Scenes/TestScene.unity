@@ -923,7 +923,7 @@ MonoBehaviour:
   slicingObjectMovement: {fileID: 695148306}
   knifeMovement: {fileID: 1963589622}
   sliceExecutor: {fileID: 356606470050942245}
-  preMatchTimerDurationInSeconds: 1
+  preMatchTimerDurationInSeconds: 3
 --- !u!4 &1281601281
 Transform:
   m_ObjectHideFlags: 0
